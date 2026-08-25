@@ -75,3 +75,63 @@
   margin-top: var(--space-sm);
   opacity: 0.8;
 }
+
+.barcode-section {
+  margin-bottom: var(--space-lg);
+}
+
+.barcode-section-title {
+  display: block;
+  font-size: var(--font-base);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-sm);
+}
+
+.barcode-row {
+  display: flex;
+  gap: var(--space-base);
+}
+
+.barcode-input {
+  flex: 1;
+  background: var(--color-bg-card);
+  border-radius: var(--radius-field);
+  padding: var(--space-base) var(--space-lg);
+  font-size: var(--font-xl);
+  border: 2rpx solid var(--color-border);
+}
+
+.barcode-btn {
+  background: var(--color-primary);
+  border-radius: var(--radius-field);
+  padding: var(--space-base) var(--space-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.barcode-btn-text {
+  color: #fff;
+  font-size: var(--font-lg);
+  white-space: nowrap;
+}
+
+.barcode-status {
+  font-size: var(--font-sm);
+  color: var(--color-text-faint);
+  margin-top: var(--space-sm);
+}
+
+.barcode-status-error {
+  color: var(--color-danger);
+}
+
+.barcode-status-success {
+  color: var(--color-primary);
+}
+
+.ref-price {
+  font-size: var(--font-sm);
+  color: var(--color-text-faint);
+  margin-top: var(--space-sm);
+}

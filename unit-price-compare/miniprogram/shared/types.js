@@ -5,7 +5,22 @@
  * @property {string} brand - 品牌，如"农夫山泉"
  * @property {string} productName - 商品名，如"饮用天然水"
  * @property {string} fullName - brand + productName，搜索用
+ * @property {string} [barcode] - 条形码，如"6921168509256"
  * @property {string} [category] - 分类，如"饮料/水"
+ * @property {Date} createTime
+ */
+
+/**
+ * barcodes 集合 - 条码查询缓存
+ * @typedef {Object} BarcodeCache
+ * @property {string} _id
+ * @property {string} barcode - 条码值
+ * @property {string} brand - 品牌
+ * @property {string} name - 商品名
+ * @property {string} spec - 规格文字，如"550ml"
+ * @property {number} [price] - 参考价
+ * @property {string} [image] - 商品图片URL
+ * @property {Object} [rawData] - API原始返回
  * @property {Date} createTime
  */
 

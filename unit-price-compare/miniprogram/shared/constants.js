@@ -23,6 +23,25 @@ const SPEC_UNITS = [
 
 const PIECE_UNITS = ["瓶", "包", "罐", "盒", "袋", "个", "支"];
 
+const BARCODE_REGEX = /^\d{8,14}$/;
+
+function parseSpecText(specText) {
+  if (!specText) return null;
+  const cleaned = specText.replace(/\s/g, "");
+  const pattern = /^([\d.]+)\s*(g|kg|ml|L|个|包|瓶|罐|盒|斤)(?:[×xX]\s*(\d+)\s*(瓶|包|罐|盒|袋|个|支))?$/i;
+  const match = cleaned.match(pattern);
+  if (!match) return null;
+  const result = {
+    specValue: Number(match[1]),
+    specUnit: match[2].toLowerCase() === "l" ? "L" : match[2].toLowerCase(),
+  };
+  if (match[3] && match[4]) {
+    result.pieceCount = Number(match[3]);
+    result.pieceUnit = match[4];
+  }
+  return result;
+}
+
 function calcUnitPrice(price, specValue, specUnit) {
   if (!price || !specValue) return 0;
   return price / specValue;
@@ -40,6 +59,8 @@ module.exports = {
   PLATFORMS,
   SPEC_UNITS,
   PIECE_UNITS,
+  BARCODE_REGEX,
   calcUnitPrice,
   formatUnitPrice,
+  parseSpecText,
 };

@@ -1,5 +1,5 @@
 const { t, getLocale } = require("../../shared/i18n/index");
-const { PLATFORM_CATEGORIES, PLATFORMS, SPEC_UNITS, PIECE_UNITS } = require("../../shared/constants");
+const { PLATFORM_CATEGORIES, PLATFORMS, SPEC_UNITS, PIECE_UNITS, BARCODE_REGEX, parseSpecText } = require("../../shared/constants");
 
 Page({
   data: {
@@ -34,6 +34,10 @@ Page({
     isEdit: false,
     priceId: "",
     deleting: false,
+    barcode: "",
+    barcodeLoading: false,
+    barcodeResult: null,
+    refPrice: "",
   },
   onLoad(options) {
     if (options.priceId) {
@@ -42,6 +46,10 @@ Page({
       this.loadProduct(options.id);
     } else {
       wx.setNavigationBarTitle({ title: t("add.navTitle") });
+      if (options.barcode && BARCODE_REGEX.test(options.barcode)) {
+        this.setData({ barcode: options.barcode });
+        this.lookupBarcode(options.barcode);
+      }
       this.checkFormValid();
     }
   },
@@ -249,6 +257,93 @@ Page({
     this.calcPreview();
     this.checkFormValid();
   },
+  onBarcodeInput(e) {
+    this.setData({ barcode: e.detail.value, barcodeResult: null });
+  },
+  onBarcodeBtnTap() {
+    if (this.data.barcode) {
+      this.onBarcodeConfirm();
+    } else {
+      this.onScanBarcode();
+    }
+  },
+  onBarcodeConfirm() {
+    const { barcode } = this.data;
+    if (barcode && BARCODE_REGEX.test(barcode)) {
+      this.lookupBarcode(barcode);
+    }
+  },
+  onScanBarcode() {
+    wx.scanCode({
+      onlyFromCamera: false,
+      scanType: ["barCode"],
+      success: (res) => {
+        if (res.result && BARCODE_REGEX.test(res.result)) {
+          this.setData({ barcode: res.result, barcodeResult: null });
+          this.lookupBarcode(res.result);
+        } else {
+          wx.showToast({ title: t("add.barcodeNotFound"), icon: "none" });
+        }
+      },
+    });
+  },
+  async lookupBarcode(barcode) {
+    this.setData({ barcodeLoading: true, barcodeResult: null });
+    try {
+      const res = await wx.cloud.callFunction({
+        name: "quickstartFunctions",
+        data: { type: "lookupBarcode", data: { barcode } },
+      });
+      const result = res.result;
+      if (result.error) {
+        this.setData({ barcodeLoading: false, barcodeResult: false });
+        return;
+      }
+      if (result.found) {
+        this.fillFromBarcode(result);
+        this.setData({ barcodeLoading: false, barcodeResult: true });
+      } else {
+        this.setData({ barcodeLoading: false, barcodeResult: false });
+      }
+    } catch (e) {
+      this.setData({ barcodeLoading: false, barcodeResult: false });
+    }
+  },
+  fillFromBarcode(data) {
+    const update = {};
+    if (data.brand) update.brand = data.brand;
+    if (data.name) {
+      let productName = data.name;
+      if (data.brand && productName.startsWith(data.brand)) {
+        productName = productName.slice(data.brand.length);
+      }
+      if (data.spec && productName.endsWith(data.spec)) {
+        productName = productName.slice(0, -data.spec.length);
+      }
+      productName = productName.replace(/^\s+|\s+$/g, "");
+      update.productName = productName || data.name;
+    }
+    if (data.spec) {
+      const parsed = parseSpecText(data.spec);
+      if (parsed) {
+        const unitIdx = SPEC_UNITS.findIndex(u => u.value === parsed.specUnit);
+        update.specUnitIndex = unitIdx >= 0 ? unitIdx : 0;
+        update.specValue = String(parsed.specValue);
+        update.spec = data.spec;
+        if (parsed.pieceCount) {
+          update.pieceCount = String(parsed.pieceCount);
+          const pUnitIdx = PIECE_UNITS.indexOf(parsed.pieceUnit);
+          update.pieceUnitIndex = pUnitIdx >= 0 ? pUnitIdx : 0;
+        }
+      } else {
+        update.spec = data.spec;
+      }
+    }
+    if (data.price) update.refPrice = "¥" + Number(data.price).toFixed(2);
+    this.setData(update);
+    this.calcPreview();
+    this.checkFormValid();
+  },
   calcPreview() {
     const { price, specValue, specUnitIndex, specUnits, pieceCount, pieceUnitIndex, pieceUnits } = this.data;
     const specUnit = specUnits[specUnitIndex].value;
@@ -317,9 +412,11 @@ Page({
         if (productRes.data.length > 0) {
           productId = productRes.data[0]._id;
         } else {
-          const addRes = await db.collection("products").add({
-            data: { brand, productName, fullName, createTime: db.serverDate() },
-          });
+          const productData = { brand, productName, fullName, createTime: db.serverDate() };
+          if (this.data.barcode && BARCODE_REGEX.test(this.data.barcode)) {
+            productData.barcode = this.data.barcode;
+          }
+          const addRes = await db.collection("products").add({ data: productData });
           productId = addRes._id;
         }
       }

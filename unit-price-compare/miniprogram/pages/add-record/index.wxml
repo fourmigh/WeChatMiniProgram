@@ -9,6 +9,29 @@
   delete-loading="{{deleting}}"
   binddeletetap="onDeleteRecord"
 >
+  <!-- 条码查询（仅新建模式） -->
+  <block wx:if="{{!isQuickAdd && !isEdit}}">
+    <view class="barcode-section">
+      <text class="barcode-section-title">{{_t.add.barcodeSectionTitle}}</text>
+      <view class="barcode-row">
+        <input class="barcode-input" type="number" placeholder="{{_t.add.barcodePlaceholder}}" value="{{barcode}}" bindinput="onBarcodeInput" bindconfirm="onBarcodeConfirm" />
+        <view class="barcode-btn" bindtap="onBarcodeBtnTap">
+          <text class="barcode-btn-text">{{barcode ? _t.add.barcodeQuery : _t.add.barcodeScan}}</text>
+        </view>
+      </view>
+      <view wx:if="{{barcodeLoading}}" class="barcode-status">
+        <text>{{_t.add.barcodeQuerying}}</text>
+      </view>
+      <view wx:if="{{barcodeResult === false}}" class="barcode-status barcode-status-error">
+        <text>{{_t.add.barcodeNotFound}}</text>
+      </view>
+      <view wx:if="{{barcodeResult === true}}" class="barcode-status barcode-status-success">
+        <text>{{_t.add.barcodeFound}}</text>
+      </view>
+    </view>
+    <view class="divider" />
+  </block>
+
   <!-- 品牌 -->
   <block wx:if="{{isQuickAdd}}">
     <view class="section required readonly">
@@ -19,7 +42,7 @@
   <block wx:else>
     <view class="section required">
       <text class="label">{{_t.add.brand}}</text>
-      <input class="input" placeholder="{{_t.add.brandPlaceholder}}" bindinput="onBrandInput" />
+      <input class="input" placeholder="{{_t.add.brandPlaceholder}}" value="{{brand}}" bindinput="onBrandInput" />
     </view>
   </block>
 
@@ -33,7 +56,7 @@
   <block wx:else>
     <view class="section required">
       <text class="label">{{_t.add.productName}}</text>
-      <input class="input" placeholder="{{_t.add.productNamePlaceholder}}" bindinput="onProductNameInput" />
+      <input class="input" placeholder="{{_t.add.productNamePlaceholder}}" value="{{productName}}" bindinput="onProductNameInput" />
     </view>
   </block>
 
@@ -112,6 +135,9 @@
   <view class="section required">
     <text class="label">{{_t.add.price}}</text>
     <input class="input" type="digit" placeholder="{{_t.add.pricePlaceholder}}" bindinput="onPriceInput" />
+    <view wx:if="{{refPrice}}" class="ref-price">
+      <text>{{_t.add.refPrice}} {{refPrice}}</text>
+    </view>
   </view>
 
   <!-- 预览 -->
