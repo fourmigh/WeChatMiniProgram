@@ -1,0 +1,16 @@
+<view class="intro">
+  <view class="intro-header">
+    <text class="intro-title">{{_t.intro.title}}</text>
+  </view>
+
+  <view class="intro-body">
+    <text class="intro-paragraph">{{_t.intro.p1}}</text>
+    <text class="intro-paragraph">{{_t.intro.p2}}</text>
+    <text class="intro-paragraph">{{_t.intro.p3}}</text>
+  </view>
+
+  <view class="intro-actions">
+    <button class="intro-btn agree-btn" bindtap="onAgree">{{_t.intro.agree}}</button>
+    <button class="intro-btn disagree-btn" bindtap="onDisagree">{{_t.intro.disagree}}</button>
+  </view>
+</view>

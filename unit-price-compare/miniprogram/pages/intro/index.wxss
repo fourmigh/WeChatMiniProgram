@@ -1,0 +1,55 @@
+.intro {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  box-sizing: border-box;
+  padding: 120rpx 60rpx 80rpx;
+  background: var(--color-bg, #F6F6F6);
+}
+
+.intro-header {
+  margin-bottom: 60rpx;
+  text-align: center;
+}
+
+.intro-title {
+  font-size: 48rpx;
+  font-weight: 600;
+  color: var(--color-text-primary, #1a1a1a);
+}
+
+.intro-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 32rpx;
+}
+
+.intro-paragraph {
+  font-size: 30rpx;
+  line-height: 1.7;
+  color: var(--color-text-secondary, #555);
+}
+
+.intro-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+  margin-top: 80rpx;
+}
+
+.intro-btn {
+  font-size: 32rpx;
+  border-radius: 48rpx;
+  padding: 20rpx 0;
+}
+
+.agree-btn {
+  background: #07c160;
+  color: #fff;
+}
+
+.disagree-btn {
+  background: #f2f2f2;
+  color: #888;
+}
