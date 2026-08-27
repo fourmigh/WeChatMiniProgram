@@ -28,6 +28,9 @@
       <view wx:if="{{barcodeResult === true}}" class="barcode-status barcode-status-success">
         <text>{{_t.add.barcodeFound}}</text>
       </view>
+      <view wx:if="{{brandNameLocked}}" class="manual-edit" bindtap="onUnlockBrandName">
+        <text>{{_t.add.manualEdit}}</text>
+      </view>
     </view>
     <view class="divider" />
   </block>
@@ -42,7 +45,15 @@
   <block wx:else>
     <view class="section required">
       <text class="label">{{_t.add.brand}}</text>
-      <input class="input" placeholder="{{_t.add.brandPlaceholder}}" value="{{brand}}" bindinput="onBrandInput" />
+      <suggest-input
+        value="{{brand}}"
+        options="{{brandOptions}}"
+        placeholder="{{_t.add.brandPlaceholder}}"
+        disabled="{{brandNameLocked}}"
+        filter-mode="prefix"
+        bind:change="onBrandChange"
+        bind:select="onBrandSelect"
+      />
     </view>
   </block>
 
@@ -56,7 +67,15 @@
   <block wx:else>
     <view class="section required">
       <text class="label">{{_t.add.productName}}</text>
-      <input class="input" placeholder="{{_t.add.productNamePlaceholder}}" value="{{productName}}" bindinput="onProductNameInput" />
+      <suggest-input
+        value="{{productName}}"
+        options="{{productNameOptions}}"
+        placeholder="{{_t.add.productNamePlaceholder}}"
+        disabled="{{brandNameLocked}}"
+        filter-mode="contains"
+        bind:change="onProductNameChange"
+        bind:select="onProductNameSelect"
+      />
     </view>
   </block>
 

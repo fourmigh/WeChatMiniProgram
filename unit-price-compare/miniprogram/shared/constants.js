@@ -54,6 +54,25 @@ function formatUnitPrice(unitPrice) {
   return unitPrice.toFixed(2);
 }
 
+function formatDate(date) {
+  if (!date) return "";
+  let d;
+  if (date instanceof Date) {
+    d = date;
+  } else if (typeof date === "string" || typeof date === "number") {
+    d = new Date(date);
+  } else if (date && date.$date) {
+    d = new Date(date.$date);
+  } else {
+    return "";
+  }
+  if (isNaN(d.getTime())) return "";
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
 module.exports = {
   PLATFORM_CATEGORIES,
   PLATFORMS,
@@ -62,5 +81,6 @@ module.exports = {
   BARCODE_REGEX,
   calcUnitPrice,
   formatUnitPrice,
+  formatDate,
   parseSpecText,
 };

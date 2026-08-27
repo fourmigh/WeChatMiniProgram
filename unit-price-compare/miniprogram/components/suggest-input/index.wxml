@@ -1,0 +1,22 @@
+<view class="suggest-input">
+  <input
+    class="si-input"
+    value="{{text}}"
+    placeholder="{{placeholder}}"
+    disabled="{{disabled}}"
+    bindinput="onInput"
+  />
+  <view class="si-arrow {{open ? 'open' : ''}}" catchtap="onArrowTap">
+    <view class="si-arrow-icon"></view>
+  </view>
+  <view wx:if="{{open}}" class="si-mask" catchtap="onMaskTap"></view>
+  <view wx:if="{{open && filtered.length && !disabled}}" class="si-panel">
+    <view
+      wx:for="{{filtered}}"
+      wx:key="*this"
+      class="si-item"
+      catchtap="onSelect"
+      data-value="{{item}}"
+    >{{item}}</view>
+  </view>
+</view>

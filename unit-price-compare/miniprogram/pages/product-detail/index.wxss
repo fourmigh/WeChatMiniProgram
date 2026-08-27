@@ -48,6 +48,17 @@
   margin-bottom: var(--space-md);
 }
 
+.spec-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--space-sm);
+}
+
+.history-link {
+  font-size: var(--font-sm);
+  color: var(--color-primary);
+}
+
 .price-row {
   display: flex;
   align-items: center;

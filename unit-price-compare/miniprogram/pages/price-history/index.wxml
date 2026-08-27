@@ -1,0 +1,52 @@
+<page-layout bar-text="{{_t.history.back}}" bar-disabled="{{false}}" bindbartap="goBack">
+  <view wx:if="{{loading}}" class="loading">{{_t.common.loading}}</view>
+
+  <block wx:else>
+    <view class="header">
+      <text class="spec-label">{{_t.history.specLabel}}：</text>
+      <text class="spec-value">{{spec}}</text>
+    </view>
+
+    <scroll-view scroll-x class="filter-row" wx:if="{{sources.length > 1}}">
+      <view
+        wx:for="{{sources}}"
+        wx:key="key"
+        class="chip {{activeSource === item.key ? 'active' : ''}}"
+        data-key="{{item.key}}"
+        bindtap="onSourceTap"
+      >{{item.label}}</view>
+    </scroll-view>
+
+    <view class="section-title">{{_t.history.trend}}</view>
+    <view class="trend">
+      <view wx:if="{{trend.length === 0}}" class="empty">{{_t.history.empty}}</view>
+      <view class="bars" wx:else>
+        <view wx:for="{{trend}}" wx:key="_id" class="bar-col">
+          <text class="bar-price {{item.isBest ? 'best' : ''}}">¥{{item.unitPriceText}}</text>
+          <view class="bar {{item.isBest ? 'best' : ''}}" style="height: {{item.heightPct}}%;"></view>
+          <text class="bar-date">{{item.dateText}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="section-title">{{_t.history.date}} / {{_t.history.source}}</view>
+    <view class="timeline">
+      <view wx:if="{{timeline.length === 0}}" class="empty">{{_t.history.empty}}</view>
+      <view wx:for="{{timeline}}" wx:key="_id" class="tl-item">
+        <view class="tl-date">{{item.dateText}}</view>
+        <view class="tl-body">
+          <view class="tl-source">
+            <text class="tag {{item.platformCategory}}" wx:if="{{item.categoryLabel}}">{{item.categoryLabel}}</text>
+            <text class="tl-source-text">{{item.platform}}·{{item.shopName}}</text>
+            <text class="current-badge" wx:if="{{item.isCurrent}}">{{_t.history.current}}</text>
+            <text class="best-badge" wx:if="{{item.isBest}}">{{_t.history.best}}</text>
+          </view>
+          <view class="tl-price">
+            <text class="tl-total">¥{{item.price}}</text>
+            <text class="tl-unit highlight">¥{{item.unitPriceText}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </block>
+</page-layout>

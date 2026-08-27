@@ -19,6 +19,11 @@ Page({
   goToAddRecord() {
     wx.navigateTo({ url: `/pages/add-record/index?id=${this.data.productId}` });
   },
+  goToHistory(e) {
+    const specId = e.currentTarget.dataset.specid;
+    const spec = e.currentTarget.dataset.spec;
+    wx.navigateTo({ url: `/pages/price-history/index?specId=${specId}&spec=${encodeURIComponent(spec)}` });
+  },
   onPriceTap(e) {
     const id = e.currentTarget.dataset.id;
     wx.navigateTo({ url: `/pages/add-record/index?priceId=${id}` });

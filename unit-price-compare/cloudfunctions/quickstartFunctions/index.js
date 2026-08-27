@@ -115,6 +115,28 @@ exports.main = async (event) => {
       }
     }
 
+    // 拉取去重后的「品牌 -> 商品名」索引，供前端自动提示
+    case "getBrandIndex": {
+      try {
+        const res = await db.collection("products").aggregate()
+          .group({
+            _id: "$brand",
+            productNames: { $addToSet: "$productName" },
+          })
+          .limit(500)
+          .end();
+        const index = (res.list || [])
+          .filter((g) => g._id)
+          .map((g) => ({
+            brand: g._id,
+            productNames: (g.productNames || []).filter(Boolean),
+          }));
+        return { index };
+      } catch (e) {
+        return { index: [] };
+      }
+    }
+
     default:
       return { error: "unknown type" };
   }

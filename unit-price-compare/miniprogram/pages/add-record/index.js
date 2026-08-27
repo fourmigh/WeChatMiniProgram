@@ -38,6 +38,10 @@ Page({
     barcodeLoading: false,
     barcodeResult: null,
     refPrice: "",
+    brandNameLocked: false,
+    brandIndex: [],
+    brandOptions: [],
+    productNameOptions: [],
   },
   onLoad(options) {
     if (options.priceId) {
@@ -50,8 +54,49 @@ Page({
         this.setData({ barcode: options.barcode });
         this.lookupBarcode(options.barcode);
       }
+      this.loadBrandIndex();
       this.checkFormValid();
     }
+  },
+  async loadBrandIndex() {
+    try {
+      const res = await wx.cloud.callFunction({
+        name: "quickstartFunctions",
+        data: { type: "getBrandIndex", data: {} },
+      });
+      if (res.result && res.result.index) {
+        const index = res.result.index;
+        this.setData({
+          brandIndex: index,
+          brandOptions: index.map((g) => g.brand),
+        });
+      }
+    } catch (e) {
+      // 索引拉取失败不影响手动录入
+    }
+  },
+  getProductNameOptions(brand) {
+    const group = this.data.brandIndex.find((g) => g.brand === brand);
+    return group ? group.productNames : [];
+  },
+  onBrandChange(e) {
+    const brand = e.detail.value;
+    this.setData({
+      brand,
+      productNameOptions: this.getProductNameOptions(brand),
+    });
+    this.checkFormValid();
+  },
+  onBrandSelect(e) {
+    this.onBrandChange(e);
+  },
+  onProductNameChange(e) {
+    const productName = e.detail.value;
+    this.setData({ productName });
+    this.checkFormValid();
+  },
+  onProductNameSelect(e) {
+    this.onProductNameChange(e);
   },
   async loadPrice(priceId) {
     const db = wx.cloud.database();
@@ -187,16 +232,13 @@ Page({
   },
   checkFormValid() {
     const { brand, productName, shopName, specValue, spec, price, showCustomPlatform, customPlatform } = this.data;
-    const valid = !!(brand && productName && shopName && spec && Number(specValue) > 0 && Number(price) > 0 && (!showCustomPlatform || customPlatform));
+    const valid = !!(brand.trim() && productName.trim() && shopName.trim() && spec && Number(specValue) > 0 && Number(price) > 0 && (!showCustomPlatform || customPlatform.trim()));
     this.setData({ isFormValid: valid });
   },
-  onBrandInput(e) {
-    this.setData({ brand: e.detail.value });
-    this.checkFormValid();
-  },
-  onProductNameInput(e) {
-    this.setData({ productName: e.detail.value });
-    this.checkFormValid();
+  onUnlockBrandName() {
+    this.setData({
+      brandNameLocked: false,
+    });
   },
   onCategoryChange(e) {
     const categoryIndex = e.detail.value;
@@ -301,7 +343,12 @@ Page({
       }
       if (result.found) {
         this.fillFromBarcode(result);
-        this.setData({ barcodeLoading: false, barcodeResult: true });
+        const locked = !!(this.data.brand && this.data.productName);
+        this.setData({
+          barcodeLoading: false,
+          barcodeResult: true,
+          brandNameLocked: locked,
+        });
       } else {
         this.setData({ barcodeLoading: false, barcodeResult: false });
       }
@@ -404,15 +451,26 @@ Page({
     const platformName = showCustomPlatform ? customPlatform : platforms[platformIndex];
 
     try {
-      // 获取或创建 product
+      // 获取或创建 product（三级去重：条码 -> 品牌+商品名 -> 新建）
       let productId = existingProductId;
       if (!productId) {
-        const fullName = brand + productName;
-        const productRes = await db.collection("products").where({ fullName }).get();
-        if (productRes.data.length > 0) {
-          productId = productRes.data[0]._id;
-        } else {
-          const productData = { brand, productName, fullName, createTime: db.serverDate() };
+        const tBrand = brand.trim();
+        const tName = productName.trim();
+        if (this.data.barcode && BARCODE_REGEX.test(this.data.barcode)) {
+          const bRes = await db.collection("products").where({ barcode: this.data.barcode }).get();
+          if (bRes.data.length > 0) {
+            productId = bRes.data[0]._id;
+          }
+        }
+        if (!productId) {
+          const pRes = await db.collection("products").where({ brand: tBrand, productName: tName }).get();
+          if (pRes.data.length > 0) {
+            productId = pRes.data[0]._id;
+          }
+        }
+        if (!productId) {
+          const fullName = tBrand + tName;
+          const productData = { brand: tBrand, productName: tName, fullName, createTime: db.serverDate() };
           if (this.data.barcode && BARCODE_REGEX.test(this.data.barcode)) {
             productData.barcode = this.data.barcode;
           }
@@ -475,6 +533,34 @@ Page({
 
       // 写入 price（编辑态更新，否则新增）
       if (isEdit) {
+        const oldRes = await db.collection("prices").doc(priceId).get();
+        const old = oldRes.data;
+        const changed =
+          old.price !== nPrice ||
+          old.unitPrice !== unitPrice ||
+          old.platformCategory !== platformCategories[categoryIndex].key ||
+          old.platform !== platformName ||
+          old.shopName !== shopName;
+        if (changed) {
+          try {
+            await db.collection("priceHistory").add({
+              data: {
+                priceId,
+                specId: old.specId,
+                platformCategory: old.platformCategory,
+                platform: old.platform,
+                shopName: old.shopName,
+                price: old.price,
+                unitPrice: old.unitPrice,
+                recordDate: old.recordDate,
+                archivedAt: db.serverDate(),
+              },
+            });
+          } catch (err) {
+            // 归档失败（如集合未创建/无权限）不影响主记录保存
+            console.error("archive price history failed", err);
+          }
+        }
         await db.collection("prices").doc(priceId).update({ data: priceData });
       } else {
         await db.collection("prices").add({
@@ -492,27 +578,74 @@ Page({
   },
   onDeleteRecord() {
     const { priceId } = this.data;
-    wx.showModal({
-      title: t("add.delete"),
-      content: t("add.deleteRecordConfirm"),
-      confirmText: t("add.delete"),
-      confirmColor: "#e53935",
+    wx.showActionSheet({
+      itemList: [t("add.deleteCurrent"), t("add.deleteAllHistory")],
       success: (res) => {
-        if (res.confirm) this.deletePriceRecord(priceId);
+        if (res.tapIndex === 0) {
+          wx.showModal({
+            title: t("add.delete"),
+            content: t("add.deleteCurrentConfirm"),
+            confirmText: t("add.delete"),
+            confirmColor: "#e53935",
+            success: (r) => { if (r.confirm) this.deleteCurrentPrice(priceId); },
+          });
+        } else if (res.tapIndex === 1) {
+          wx.showModal({
+            title: t("add.delete"),
+            content: t("add.deleteAllConfirm"),
+            confirmText: t("add.delete"),
+            confirmColor: "#e53935",
+            success: (r) => { if (r.confirm) this.deleteAllForSpec(priceId); },
+          });
+        }
       },
     });
   },
-  async deletePriceRecord(priceId) {
+  async deleteCurrentPrice(priceId) {
     const db = wx.cloud.database();
     this.setData({ deleting: true });
     try {
       const priceRes = await db.collection("prices").doc(priceId).get();
       const specId = priceRes.data.specId;
+      // 删除当前价格
       await db.collection("prices").doc(priceId).remove();
+      // 删除该价格自己的归档快照，避免孤儿数据
+      const archRes = await db.collection("priceHistory").where({ priceId }).get();
+      for (const a of archRes.data) {
+        await db.collection("priceHistory").doc(a._id).remove();
+      }
+      // 若该规格已无任何价格，清理规格及其余归档
       const remainRes = await db.collection("prices").where({ specId }).count();
       if (remainRes.total === 0) {
+        const restArch = await db.collection("priceHistory").where({ specId }).get();
+        for (const a of restArch.data) {
+          await db.collection("priceHistory").doc(a._id).remove();
+        }
         await db.collection("specs").doc(specId).remove();
       }
+      wx.showToast({ title: t("add.deleteSuccess") });
+      wx.navigateBack();
+    } catch (e) {
+      wx.showToast({ title: t("add.deleteFail"), icon: "none" });
+    } finally {
+      this.setData({ deleting: false });
+    }
+  },
+  async deleteAllForSpec(priceId) {
+    const db = wx.cloud.database();
+    this.setData({ deleting: true });
+    try {
+      const priceRes = await db.collection("prices").doc(priceId).get();
+      const specId = priceRes.data.specId;
+      const pricesRes = await db.collection("prices").where({ specId }).get();
+      for (const p of pricesRes.data) {
+        await db.collection("prices").doc(p._id).remove();
+      }
+      const archRes = await db.collection("priceHistory").where({ specId }).get();
+      for (const a of archRes.data) {
+        await db.collection("priceHistory").doc(a._id).remove();
+      }
+      await db.collection("specs").doc(specId).remove();
       wx.showToast({ title: t("add.deleteSuccess") });
       wx.navigateBack();
     } catch (e) {

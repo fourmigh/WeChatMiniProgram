@@ -13,6 +13,10 @@
       <view class="spec-card" wx:for="{{specs}}" wx:key="_id">
         <view class="spec-title">{{item.spec}}</view>
 
+        <view class="spec-actions">
+          <text class="history-link" data-specid="{{item._id}}" data-spec="{{item.spec}}" bindtap="goToHistory">{{_t.detail.historyLink}}</text>
+        </view>
+
         <view class="price-row price-header">
           <text class="col rank">{{_t.detail.rank}}</text>
           <text class="col platform">{{_t.detail.platform}}</text>

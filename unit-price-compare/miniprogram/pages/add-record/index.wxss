@@ -135,3 +135,13 @@
   color: var(--color-text-faint);
   margin-top: var(--space-sm);
 }
+
+.manual-edit {
+  margin-top: var(--space-sm);
+  display: inline-block;
+  padding: var(--space-sm) var(--space-lg);
+  font-size: var(--font-sm);
+  color: var(--color-primary);
+  border: 2rpx solid var(--color-primary);
+  border-radius: var(--radius-field);
+}
