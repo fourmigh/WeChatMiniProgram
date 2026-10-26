@@ -1,0 +1,67 @@
+<view class="container">
+  <view class="hero">
+    <view class="title">我到底认识几个汉字</view>
+    <view class="subtitle">从识形到通源，八级汉字能力自测 · 共 {{totalChars}} 字</view>
+  </view>
+
+  <view class="card">
+    <view class="section-title">单字测级</view>
+    <view class="muted">输入或随机选一个字，逐级挑战它的形、音、义、写、用、源。</view>
+    <view class="char-input-row">
+      <input
+        class="char-input"
+        value="{{charInput}}"
+        maxlength="2"
+        placeholder="输入一个汉字"
+        bindinput="onCharInput"
+      />
+      <view class="random-btn" bindtap="randomChar">随机</view>
+    </view>
+    <view class="btn mt" bindtap="startSingle">开始测这个字</view>
+  </view>
+
+  <view class="card">
+    <view class="section-title">整体自测</view>
+    <view class="muted">按档位随机抽字，估算你的整体识字水平。</view>
+
+    <view class="field-label">字库范围</view>
+    <view class="chips">
+      <view
+        wx:for="{{scopes}}"
+        wx:key="index"
+        class="chip {{scopeIndex === item.index ? 'active' : ''}}"
+        data-index="{{item.index}}"
+        bindtap="selectScope"
+      >{{item.name}} {{item.count}}</view>
+    </view>
+
+    <view class="field-label">抽样字数</view>
+    <view class="chips">
+      <view
+        wx:for="{{sampleSizes}}"
+        wx:key="*this"
+        class="chip {{sampleSize === item ? 'active' : ''}}"
+        data-size="{{item}}"
+        bindtap="selectSize"
+      >{{item}} 字</view>
+    </view>
+
+    <view class="btn mt" bindtap="startTest">开始自测</view>
+  </view>
+
+  <view class="card last" wx:if="{{lastResult}}">
+    <view class="row between">
+      <view>
+        <view class="section-title last-title">上次成绩</view>
+        <view class="muted">{{lastResult.scopeName}} · {{lastResult.count}} 字 · {{lastResult.dateText}}</view>
+      </view>
+      <view class="last-level">{{lastResult.avgLevelText}}</view>
+    </view>
+  </view>
+
+  <view class="footer">
+    <view class="footer-link" bindtap="goIntro">等级说明</view>
+    <view class="footer-dot">·</view>
+    <view class="footer-link" bindtap="goHistory">历史记录</view>
+  </view>
+</view>

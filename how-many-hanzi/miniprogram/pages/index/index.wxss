@@ -1,0 +1,65 @@
+.hero {
+  padding: 24rpx 8rpx 40rpx;
+}
+
+.char-input-row {
+  display: flex;
+  align-items: center;
+  margin-top: 28rpx;
+}
+
+.char-input {
+  flex: 1;
+  background: #f0ebe2;
+  border-radius: 16rpx;
+  padding: 20rpx 24rpx;
+  font-size: 40rpx;
+  text-align: center;
+  letter-spacing: 4rpx;
+  height: 96rpx;
+  box-sizing: border-box;
+}
+
+.random-btn {
+  margin-left: 16rpx;
+  padding: 0 32rpx;
+  height: 96rpx;
+  line-height: 96rpx;
+  border-radius: 16rpx;
+  background: #22333b;
+  color: #ffffff;
+  font-size: 28rpx;
+}
+
+.field-label {
+  font-size: 26rpx;
+  color: #7a858c;
+  margin: 28rpx 0 12rpx;
+}
+
+.last-title {
+  margin-bottom: 6rpx;
+}
+
+.last-level {
+  font-size: 48rpx;
+  font-weight: 700;
+  color: #c8553d;
+}
+
+.footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24rpx 0 48rpx;
+  font-size: 26rpx;
+  color: #7a858c;
+}
+
+.footer-link {
+  padding: 8rpx 16rpx;
+}
+
+.footer-dot {
+  margin: 0 8rpx;
+}

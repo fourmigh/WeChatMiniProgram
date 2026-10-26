@@ -1,0 +1,38 @@
+.record-level {
+  font-size: 44rpx;
+  font-weight: 700;
+  color: #22333b;
+  line-height: 1.2;
+}
+
+.record-right {
+  text-align: right;
+}
+
+.record-mastery {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #c8553d;
+  line-height: 1.2;
+}
+
+.record-foot {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20rpx;
+  padding-top: 20rpx;
+  border-top: 1rpx solid #f0ebe2;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 200rpx 0;
+}
+
+.empty-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  margin-bottom: 12rpx;
+}

@@ -1,0 +1,5 @@
+node_modules/
+scripts/data/word.json
+scripts/*-out.txt
+scripts/explain-samples.txt
+scripts/explain-raw.txt

@@ -1,0 +1,13 @@
+{
+  "name": "how-many-hanzi",
+  "version": "1.0.0",
+  "description": "我到底认识几个汉字",
+  "dependencies": {
+    "cnchar": "^3.2.6",
+    "cnchar-order": "^3.2.6",
+    "cnchar-poly": "^3.2.6",
+    "cnchar-radical": "^3.2.6",
+    "cnchar-words": "^3.2.6"
+  },
+  "devDependencies": {}
+}

@@ -1,0 +1,19 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/quiz/quiz",
+    "pages/result/result",
+    "pages/intro/intro",
+    "pages/history/history"
+  ],
+  "window": {
+    "backgroundColor": "#F7F3EC",
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#F7F3EC",
+    "navigationBarTitleText": "我到底认识几个汉字",
+    "navigationBarTextStyle": "black"
+  },
+  "sitemapLocation": "sitemap.json",
+  "style": "v2",
+  "lazyCodeLoading": "requiredComponents"
+}

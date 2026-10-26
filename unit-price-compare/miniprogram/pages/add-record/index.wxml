@@ -11,6 +11,51 @@
 >
   <!-- 条码查询（仅新建模式） -->
   <block wx:if="{{!isQuickAdd && !isEdit}}">
+    <!-- 拍照识别入口 -->
+    <view class="ocr-section">
+      <text class="ocr-section-title">{{_t.add.ocrTitle}}</text>
+      <view class="ocr-btn-row">
+        <view class="ocr-btn" bindtap="onOcrPhoto">
+          <text class="ocr-btn-text">{{_t.add.ocrPhoto}}</text>
+        </view>
+        <view class="ocr-btn" bindtap="onOcrAlbum">
+          <text class="ocr-btn-text">{{_t.add.ocrAlbum}}</text>
+        </view>
+      </view>
+      <view wx:if="{{ocrLoading}}" class="ocr-status">
+        <text>{{_t.add.ocrRecognizing}}</text>
+      </view>
+      <view wx:if="{{ocrError}}" class="ocr-status ocr-status-error">
+        <text>{{ocrError}}</text>
+      </view>
+    </view>
+
+    <!-- OCR自动填充提示 -->
+    <view wx:if="{{ocrAutoFilled}}" class="ocr-autofill-hint">
+      <text class="ocr-autofill-icon">✓</text>
+      <text class="ocr-autofill-text">{{_t.add.ocrAutoFilled}}：{{ocrAutoFilledFields}}</text>
+    </view>
+
+    <!-- OCR候选文字标签 -->
+    <block wx:if="{{ocrCandidates.length > 0}}">
+      <view class="ocr-tags-section">
+        <text class="ocr-tags-title">{{_t.add.ocrTagsTitle}}</text>
+        <view class="ocr-tags">
+          <view
+            wx:for="{{ocrCandidates}}"
+            wx:key="index"
+            class="ocr-tag"
+            bindtap="onOcrTagTap"
+            data-index="{{index}}"
+          >
+            <text class="ocr-tag-text">{{item.text}}</text>
+          </view>
+        </view>
+      </view>
+    </block>
+
+    <view class="divider" />
+
     <view class="barcode-section">
       <text class="barcode-section-title">{{_t.add.barcodeSectionTitle}}</text>
       <view class="barcode-row">
@@ -163,5 +208,29 @@
   <view wx:if="{{unitPriceText}}" class="preview">
     <text class="preview-text">{{unitPriceText}}</text>
     <text wx:if="{{perPieceText}}" class="preview-text per-piece">{{perPieceText}}</text>
+  </view>
+
+  <!-- OCR字段选择弹窗 -->
+  <view wx:if="{{showOcrFieldPicker}}" class="ocr-picker-mask" bindtap="onOcrPickerCancel">
+    <view class="ocr-picker" catchtap="">
+      <view class="ocr-picker-header">
+        <text class="ocr-picker-title">{{_t.add.ocrSelectField}}</text>
+        <text class="ocr-picker-selected-text">「{{ocrSelectedText}}」</text>
+      </view>
+      <view class="ocr-picker-options">
+        <view class="ocr-picker-option" bindtap="onOcrFieldSelect" data-field="brand">
+          <text>{{_t.add.ocrFieldBrand}}</text>
+        </view>
+        <view class="ocr-picker-option" bindtap="onOcrFieldSelect" data-field="productName">
+          <text>{{_t.add.ocrFieldProductName}}</text>
+        </view>
+        <view class="ocr-picker-option" bindtap="onOcrFieldSelect" data-field="shopName">
+          <text>{{_t.add.ocrFieldShopName}}</text>
+        </view>
+      </view>
+      <view class="ocr-picker-cancel" bindtap="onOcrPickerCancel">
+        <text>取消</text>
+      </view>
+    </view>
   </view>
 </page-layout>

@@ -1,0 +1,51 @@
+<view class="container quiz">
+  <view class="top-bar">
+    <view class="progress-text">{{progressText}}</view>
+    <view class="level-badge" wx:if="{{level > 0}}">L{{level}}</view>
+  </view>
+
+  <view class="level-track">
+    <view
+      wx:for="{{levels}}"
+      wx:key="n"
+      class="level-seg {{item.n <= level ? 'on' : ''}} {{question && item.n === question.level ? 'cur' : ''}}"
+    >
+      <view class="dot"></view>
+      <view class="seg-label">{{item.label}}</view>
+    </view>
+  </view>
+
+  <view class="char-stage">
+    <view class="char {{charSize}}">{{char}}</view>
+    <view class="level-tag" wx:if="{{question}}">L{{question.level}} · {{question.levelName}}</view>
+  </view>
+
+  <view class="prompt" wx:if="{{question}}">{{question.question}}</view>
+
+  <view class="options">
+    <view
+      wx:for="{{optionViews}}"
+      wx:key="value"
+      class="option {{item.state}}"
+      data-value="{{item.value}}"
+      bindtap="onOption"
+    >
+      <text class="option-text {{question && question.type === 'multi' ? 'small' : ''}}">{{item.label}}</text>
+      <view class="check" wx:if="{{question && question.type === 'multi' && item.state === 'selected'}}">✓</view>
+    </view>
+  </view>
+
+  <view
+    wx:if="{{multi && !answered}}"
+    class="btn mt {{selected.length ? '' : 'disabled'}}"
+    bindtap="submitAnswer"
+  >提交答案</view>
+
+  <view wx:if="{{answered}}" class="feedback {{isCorrect ? 'ok' : 'bad'}}">
+    <view class="feedback-title">{{feedback}}</view>
+    <view class="feedback-sub">{{feedbackSub}}</view>
+    <view class="feedback-answer">正确答案：{{answerText}}</view>
+  </view>
+
+  <view wx:if="{{answered}}" class="btn mt" bindtap="next">{{nextText}}</view>
+</view>

@@ -115,6 +115,27 @@ exports.main = async (event) => {
       }
     }
 
+    // OCR 通用印刷体识别
+    case "ocrRecognize": {
+      const { imageUrl } = data;
+      if (!imageUrl) return { error: "missing imageUrl" };
+
+      try {
+        const tokenRes = await cloud.getAccessToken();
+        const accessToken = tokenRes.access_token;
+        const ocrRes = await axios.get(
+          `https://api.weixin.qq.com/cv/ocr/comm?access_token=${accessToken}&img_url=${encodeURIComponent(imageUrl)}`,
+          { timeout: 10000 }
+        );
+        if (ocrRes.data && ocrRes.data.items) {
+          return { items: ocrRes.data.items };
+        }
+        return { items: [], error: ocrRes.data.errmsg || "ocr failed" };
+      } catch (e) {
+        return { items: [], error: e.message };
+      }
+    }
+
     // 拉取去重后的「品牌 -> 商品名」索引，供前端自动提示
     case "getBrandIndex": {
       try {

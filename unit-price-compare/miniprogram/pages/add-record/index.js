@@ -1,5 +1,6 @@
 const { t, getLocale } = require("../../shared/i18n/index");
 const { PLATFORM_CATEGORIES, PLATFORMS, SPEC_UNITS, PIECE_UNITS, BARCODE_REGEX, parseSpecText } = require("../../shared/constants");
+const { parseOcrResult } = require("../../shared/ocr-parser");
 
 Page({
   data: {
@@ -42,6 +43,14 @@ Page({
     brandIndex: [],
     brandOptions: [],
     productNameOptions: [],
+    ocrLoading: false,
+    ocrError: "",
+    ocrCandidates: [],
+    ocrAutoFilled: false,
+    ocrAutoFilledFields: "",
+    showOcrFieldPicker: false,
+    ocrSelectedText: "",
+    ocrSelectedIndex: -1,
   },
   onLoad(options) {
     if (options.priceId) {
@@ -90,6 +99,120 @@ Page({
   onBrandSelect(e) {
     this.onBrandChange(e);
   },
+
+  // ===== OCR 拍照识别 =====
+  onOcrPhoto() {
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ["image"],
+      sourceType: ["camera"],
+      success: (res) => {
+        const filePath = res.tempFiles[0].tempFilePath;
+        this.doOcrRecognize(filePath);
+      },
+    });
+  },
+  onOcrAlbum() {
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ["image"],
+      sourceType: ["album"],
+      success: (res) => {
+        const filePath = res.tempFiles[0].tempFilePath;
+        this.doOcrRecognize(filePath);
+      },
+    });
+  },
+  async doOcrRecognize(filePath) {
+    this.setData({ ocrLoading: true, ocrError: "", ocrCandidates: [], ocrAutoFilled: false });
+    try {
+      const uploadRes = await wx.cloud.uploadFile({
+        cloudPath: `ocr/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`,
+        filePath,
+      });
+      const fileID = uploadRes.fileID;
+      const tempUrlRes = await wx.cloud.getTempFileURL({ fileList: [fileID] });
+      const imageUrl = tempUrlRes.fileList[0].tempFileURL;
+
+      const res = await wx.cloud.callFunction({
+        name: "quickstartFunctions",
+        data: { type: "ocrRecognize", data: { imageUrl } },
+      });
+      const result = res.result;
+      if (result.error && (!result.items || result.items.length === 0)) {
+        this.setData({ ocrLoading: false, ocrError: t("add.ocrFail") + ": " + result.error });
+        return;
+      }
+
+      const parsed = parseOcrResult(result.items);
+      const update = { ocrLoading: false };
+
+      const filledFields = [];
+      if (parsed.price) {
+        update.price = parsed.price;
+        filledFields.push("价格");
+      }
+      if (parsed.spec) {
+        const sp = parseSpecText(parsed.spec);
+        if (sp) {
+          const unitIdx = SPEC_UNITS.findIndex((u) => u.value === sp.specUnit);
+          update.specUnitIndex = unitIdx >= 0 ? unitIdx : 0;
+          update.specValue = String(sp.specValue);
+          update.spec = parsed.spec;
+          if (sp.pieceCount) {
+            update.pieceCount = String(sp.pieceCount);
+            const pUnitIdx = PIECE_UNITS.indexOf(sp.pieceUnit);
+            update.pieceUnitIndex = pUnitIdx >= 0 ? pUnitIdx : 0;
+          }
+        } else {
+          update.spec = parsed.spec;
+        }
+        filledFields.push("规格");
+      }
+
+      update.ocrCandidates = parsed.candidates;
+      update.ocrAutoFilled = filledFields.length > 0;
+      update.ocrAutoFilledFields = filledFields.join("、");
+
+      this.setData(update);
+      this.calcPreview();
+      this.checkFormValid();
+    } catch (e) {
+      this.setData({ ocrLoading: false, ocrError: t("add.ocrFail") });
+    }
+  },
+  onOcrTagTap(e) {
+    const index = e.currentTarget.dataset.index;
+    const candidate = this.data.ocrCandidates[index];
+    if (!candidate) return;
+    this.setData({
+      showOcrFieldPicker: true,
+      ocrSelectedText: candidate.text,
+      ocrSelectedIndex: index,
+    });
+  },
+  onOcrFieldSelect(e) {
+    const field = e.currentTarget.dataset.field;
+    const { ocrSelectedText, ocrCandidates, ocrSelectedIndex } = this.data;
+    const update = {};
+    update[field] = ocrSelectedText;
+    const remaining = ocrCandidates.filter((_, i) => i !== ocrSelectedIndex);
+    update.ocrCandidates = remaining;
+    update.showOcrFieldPicker = false;
+    update.ocrSelectedText = "";
+    update.ocrSelectedIndex = -1;
+    this.setData(update);
+    this.checkFormValid();
+  },
+  onOcrPickerCancel() {
+    this.setData({
+      showOcrFieldPicker: false,
+      ocrSelectedText: "",
+      ocrSelectedIndex: -1,
+    });
+  },
+
+  // ===== 其他字段 =====
   onProductNameChange(e) {
     const productName = e.detail.value;
     this.setData({ productName });

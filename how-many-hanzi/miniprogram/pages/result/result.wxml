@@ -1,0 +1,65 @@
+<view class="container" wx:if="{{hasResult}}">
+  <block wx:if="{{mode === 'single'}}">
+    <view class="single-hero">
+      <view class="big-char">{{result.char}}</view>
+      <view class="level-pill">L{{result.level}}</view>
+      <view class="level-name">{{result.levelName}}</view>
+      <view class="desc">{{desc}}</view>
+    </view>
+
+    <view class="card" wx:if="{{logRows.length}}">
+      <view class="section-title">逐级记录</view>
+      <view class="log-row" wx:for="{{logRows}}" wx:key="level">
+        <view class="log-level">L{{item.level}} {{item.name}}</view>
+        <view class="log-text {{item.ok ? 'ok' : 'bad'}}">{{item.text}}</view>
+      </view>
+    </view>
+  </block>
+
+  <block wx:else>
+    <view class="card summary">
+      <view class="summary-top">
+        <view>
+          <view class="muted">{{result.scopeName}} · {{desc}}</view>
+          <view class="avg">{{result.avgLevelText}}</view>
+          <view class="muted">平均识字等级</view>
+        </view>
+        <view class="mastery">
+          <view class="mastery-num">{{result.mastery}}%</view>
+          <view class="muted">掌握度</view>
+        </view>
+      </view>
+
+      <view class="divider"></view>
+
+      <view class="row between">
+        <view class="stat">
+          <view class="stat-num">{{result.estimated}}</view>
+          <view class="muted">估算认识字数</view>
+        </view>
+        <view class="stat">
+          <view class="stat-num">{{result.scopeTotal}}</view>
+          <view class="muted">本档总字数</view>
+        </view>
+        <view class="stat">
+          <view class="stat-num">{{result.count}}</view>
+          <view class="muted">抽样字数</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="section-title">等级分布</view>
+      <view class="bar-row" wx:for="{{bars}}" wx:key="level">
+        <view class="bar-label">L{{item.level}} {{item.name}}</view>
+        <view class="bar-track">
+          <view class="bar-fill {{item.level === 0 ? 'gray' : ''}}" style="width: {{item.width}}%"></view>
+        </view>
+        <view class="bar-count">{{item.count}}</view>
+      </view>
+    </view>
+  </block>
+
+  <view class="btn mt" bindtap="again">再测一次</view>
+  <view class="btn ghost mt" wx:if="{{mode === 'test'}}" bindtap="goHistory">查看历史记录</view>
+</view>

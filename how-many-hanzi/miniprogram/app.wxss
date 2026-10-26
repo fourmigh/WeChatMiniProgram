@@ -1,0 +1,98 @@
+page {
+  background: #f7f3ec;
+  color: #22333b;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+  font-size: 30rpx;
+  line-height: 1.6;
+}
+
+.container {
+  padding: 32rpx;
+  box-sizing: border-box;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 24rpx;
+  padding: 32rpx;
+  box-shadow: 0 4rpx 24rpx rgba(34, 51, 59, 0.06);
+  margin-bottom: 28rpx;
+}
+
+.title {
+  font-size: 40rpx;
+  font-weight: 700;
+  letter-spacing: 2rpx;
+}
+
+.subtitle {
+  font-size: 26rpx;
+  color: #7a858c;
+  margin-top: 8rpx;
+}
+
+.section-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #22333b;
+  margin-bottom: 20rpx;
+}
+
+.muted {
+  color: #7a858c;
+  font-size: 24rpx;
+}
+
+.btn {
+  background: #c8553d;
+  color: #ffffff;
+  border-radius: 44rpx;
+  padding: 22rpx 0;
+  text-align: center;
+  font-size: 32rpx;
+  font-weight: 600;
+  letter-spacing: 2rpx;
+}
+
+.btn.ghost {
+  background: transparent;
+  color: #22333b;
+  border: 2rpx solid #d8d0c4;
+}
+
+.btn.disabled {
+  opacity: 0.5;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  margin: -8rpx;
+}
+
+.chip {
+  padding: 12rpx 28rpx;
+  border-radius: 40rpx;
+  background: #f0ebe2;
+  color: #55636b;
+  margin: 8rpx;
+  font-size: 26rpx;
+}
+
+.chip.active {
+  background: #22333b;
+  color: #ffffff;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+}
+
+.between {
+  justify-content: space-between;
+}
+
+.mt {
+  margin-top: 24rpx;
+}
