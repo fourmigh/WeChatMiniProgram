@@ -9,16 +9,19 @@
       <block wx:if="{{mode === 'single'}}">
         <view class="single-hero">
           <view class="big-char">{{result.char}}</view>
-          <view class="level-pill">L{{result.level}}</view>
+          <view class="lv-mark lg lv{{result.level}}">{{levelMark}}</view>
           <view class="level-name">{{result.levelName}}</view>
           <view class="desc">{{desc}}</view>
         </view>
 
         <view class="card" wx:if="{{logRows.length}}">
           <view class="section-title">逐级记录</view>
-          <view class="log-row" wx:for="{{logRows}}" wx:key="key">
-            <view class="log-level">L{{item.level}} {{item.name}}</view>
-            <view class="log-text {{item.ok ? 'ok' : 'bad'}}">{{item.text}}</view>
+          <view class="log-grid">
+            <view class="log-item {{item.ok ? 'ok' : 'bad'}}" wx:for="{{logRows}}" wx:key="key">
+              <text class="lv-mark sm lv{{item.level}}">{{item.mark}}</text>
+              <text class="log-name">{{item.name}}</text>
+              <text class="log-state">{{item.text}}</text>
+            </view>
           </view>
         </view>
       </block>
@@ -33,7 +36,7 @@
             </view>
             <view class="mastery">
               <view class="mastery-num">{{result.mastery}}%</view>
-              <view class="muted">掌握度</view>
+              <view class="rank-tag"><text class="lv-rank sm">{{rank}}</text></view>
             </view>
           </view>
 
@@ -57,18 +60,27 @@
 
         <view class="card">
           <view class="section-title">等级分布</view>
-          <view class="bar-row" wx:for="{{bars}}" wx:key="level">
-            <view class="bar-label">L{{item.level}} {{item.name}}</view>
-            <view class="bar-track">
-              <view class="bar-fill {{item.level === 0 ? 'gray' : ''}}" style="width: {{item.width}}%"></view>
+          <view class="bar-grid">
+            <view class="bar-item" wx:for="{{bars}}" wx:key="level">
+              <view class="bar-top">
+              <view class="bar-label">
+                <text class="lv-mark sm lv{{item.level}}">{{item.mark}}</text>
+                <text class="bar-label-text">{{item.name}}</text>
+              </view>
+                <text class="bar-count">{{item.count}}</text>
+              </view>
+              <view class="bar-track">
+                <view class="bar-fill {{item.level === 0 ? 'gray' : ''}}" style="width: {{item.width}}%"></view>
+              </view>
             </view>
-            <view class="bar-count">{{item.count}}</view>
           </view>
         </view>
       </block>
 
-      <view class="btn mt" bindtap="again">再测一次</view>
-      <view class="btn ghost mt" wx:if="{{mode === 'test'}}" bindtap="goHistory">查看历史记录</view>
+      <view class="btn-row">
+        <view class="btn" bindtap="again">再测一次</view>
+        <view class="btn ghost" wx:if="{{mode === 'test'}}" bindtap="goHistory">查看历史</view>
+      </view>
     </view>
   </scroll-view>
 

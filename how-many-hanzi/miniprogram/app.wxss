@@ -136,6 +136,55 @@ page {
   margin-top: var(--sp-md);
 }
 
+.lv-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 50%;
+  background: #22333b;
+  color: #ffffff;
+  font-size: 24rpx;
+  font-weight: 600;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.lv-mark.sm {
+  width: 32rpx;
+  height: 32rpx;
+  font-size: 20rpx;
+}
+
+.lv-mark.lg {
+  width: 52rpx;
+  height: 52rpx;
+  font-size: 30rpx;
+}
+
+.lv-rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40rpx;
+  padding: 0 14rpx;
+  border-radius: 20rpx;
+  background: #c8553d;
+  color: #ffffff;
+  font-size: 24rpx;
+  font-weight: 600;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.lv-rank.sm {
+  height: 32rpx;
+  padding: 0 10rpx;
+  font-size: 20rpx;
+  border-radius: 16rpx;
+}
+
 .lv0 {
   background: #a8a29a;
 }

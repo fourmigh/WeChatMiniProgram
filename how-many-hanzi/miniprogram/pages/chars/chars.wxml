@@ -4,32 +4,58 @@
     <view class="page-sub">{{count}} 个字的最高等级记录</view>
   </view>
 
+  <view class="stats-fixed" wx:if="{{hasData}}">
+    <view class="card stats-card">
+      <view class="row between">
+        <view>
+          <view class="stat-num">{{count}}</view>
+          <view class="muted">已测过的字（记录最高等级）</view>
+        </view>
+        <view class="card-actions">
+          <view class="action-link {{manage ? 'active' : ''}}" bindtap="toggleManage">{{manage ? '完成' : '管理'}}</view>
+          <view class="action-link warn" bindtap="clearChars">清空</view>
+        </view>
+      </view>
+      <view class="dist-list">
+        <view class="progress-row">
+          <view class="progress-label">覆盖</view>
+          <view class="progress-track">
+            <view class="progress-fill cov" style="width: {{coverage}}%"></view>
+          </view>
+          <view class="progress-text">{{count}} / {{totalChars}} · {{coverage}}%</view>
+        </view>
+        <view class="progress-row">
+          <view class="progress-label">掌握</view>
+          <view class="progress-track">
+            <view class="progress-fill mas" style="width: {{mastery}}%"></view>
+          </view>
+          <view class="progress-text">{{mastery}}%</view>
+        </view>
+        <view class="rank-line">
+          <text class="lv-rank">{{rank}}</text>
+          <text class="rank-sub">当前功名</text>
+        </view>
+        <view class="dist-row" wx:for="{{dist}}" wx:key="level" wx:if="{{item.count > 0}}">
+          <view class="dist-label">
+            <text class="lv-mark sm lv{{item.level}}">{{item.mark}}</text>
+          </view>
+          <view class="dist-track">
+            <view class="dist-fill lv{{item.level}}" style="width: {{item.pct}}%"></view>
+          </view>
+          <view class="dist-count">{{item.count}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
   <scroll-view scroll-y enhanced="{{true}}" show-scrollbar="{{false}}" class="page-body">
     <view class="container">
       <block wx:if="{{hasData}}">
-        <view class="card">
-          <view class="row between">
-            <view>
-              <view class="stat-num">{{count}}</view>
-              <view class="muted">已测过的字（记录最高等级）</view>
-            </view>
-            <view class="card-actions">
-              <view class="action-link {{manage ? 'active' : ''}}" bindtap="toggleManage">{{manage ? '完成' : '管理'}}</view>
-              <view class="action-link warn" bindtap="clearChars">清空</view>
-            </view>
-          </view>
-          <view class="mt"></view>
-          <view class="dist-row" wx:for="{{dist}}" wx:key="level" wx:if="{{item.count > 0}}">
-            <view class="dist-label">L{{item.level}}</view>
-            <view class="dist-track">
-              <view class="dist-fill lv{{item.level}}" style="width: {{item.pct}}%"></view>
-            </view>
-            <view class="dist-count">{{item.count}}</view>
-          </view>
-        </view>
-
         <view class="card" wx:for="{{groups}}" wx:key="level" wx:for-item="g">
-          <view class="section-title">L{{g.level}} {{g.name}} · {{g.chars.length}}</view>
+          <view class="section-title">
+            <text class="lv-mark sm lv{{g.level}}">{{g.mark}}</text>
+            <text class="section-title-text">· {{g.name}} · {{g.chars.length}}</text>
+          </view>
           <view class="cell-grid">
             <view
               class="char-mini {{manage ? 'manage' : ''}}"
@@ -40,7 +66,7 @@
               bindtap="onMiniTap"
             >
               <view class="mini-char">{{c.char}}</view>
-              <view class="mini-level lv{{c.level}}">{{c.level}}</view>
+              <view class="mini-level lv{{c.level}}">{{c.mark}}</view>
               <view class="mini-del" wx:if="{{manage}}">×</view>
             </view>
           </view>

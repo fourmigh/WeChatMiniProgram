@@ -1,6 +1,7 @@
 const chars = require("../../lib/chars");
 const storage = require("../../lib/storage");
 const nav = require("../../lib/nav");
+const levels = require("../../lib/levels");
 const { pickOne } = require("../../lib/utils");
 
 Page({
@@ -37,7 +38,20 @@ onLoad() {
 
   refreshLast() {
     const history = storage.getHistory();
-    this.setData({ lastResult: history[0] || null });
+    const last = history[0] || null;
+    this.setData({
+      lastResult: last
+        ? Object.assign({}, last, {
+            avgText: levels.avgText(last.avgLevel),
+            avgMark: levels.markOf(
+              Math.min(Math.round(Number(last.avgLevel) || 0), 6)
+            ),
+            avgValue: "等 " + (Number(last.avgLevel) || 0).toFixed(1),
+            avgLevelRound: Math.min(Math.round(Number(last.avgLevel) || 0), 6),
+            rank: levels.rankOf(last.mastery),
+          })
+        : null,
+    });
   },
 
   selectScope(e) {

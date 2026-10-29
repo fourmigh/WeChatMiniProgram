@@ -1,19 +1,33 @@
 <view class="page">
   <view class="page-head">
     <view class="page-title">等级说明</view>
-    <view class="page-sub">从识形到通源，八级汉字能力自测 · 共 {{total}} 字</view>
+    <view class="page-sub">从识形到通源，六级汉字能力自测 · 共 {{total}} 字</view>
   </view>
 
   <scroll-view scroll-y enhanced="{{true}}" show-scrollbar="{{false}}" class="page-body">
     <view class="container">
       <view class="card">
+        <view class="muted level-note">甲/乙/丙/丁/戊/己 为传统分级用字，甲最高。</view>
         <view class="level-item" wx:for="{{levels}}" wx:key="n">
-          <view class="level-no {{item.n === 0 ? 'zero' : ''}}">{{item.n === 0 ? '—' : 'L' + item.n}}</view>
+          <view class="level-no">
+            <text class="lv-mark lv{{item.n}}">{{item.mark}}</text>
+          </view>
           <view class="level-body">
             <view class="level-head">{{item.name}}</view>
             <view class="level-desc">{{item.desc}}</view>
           </view>
         </view>
+      </view>
+
+      <view class="card">
+        <view class="section-title">科举功名</view>
+        <view class="muted">字库页的「掌握度」以科举功名表示：</view>
+        <view class="rank-row" wx:for="{{ranks}}" wx:key="name">
+          <view class="rank-name"><text class="lv-rank sm">{{item.name}}</text></view>
+          <view class="rank-range">{{item.range}}</view>
+          <view class="rank-desc">{{item.desc}}</view>
+        </view>
+        <view class="muted mt">取自科举晋升序列：童生 → 秀才 → 举人 → 贡士 → 进士 → 状元（另加「蒙童」启蒙档）。</view>
       </view>
 
       <view class="card">
@@ -27,7 +41,7 @@
 
       <view class="card">
         <view class="section-title">计分方式</view>
-        <view class="rule">单字测级从 L1 开始逐级出题，答错即停在上一级。</view>
+        <view class="rule">单字测级从甲开始逐级出题，答错即停在上一级。</view>
         <view class="rule">整体自测按档位抽字，每个字独立测级。</view>
         <view class="rule">平均等级越高、掌握度越高，说明识字水平越好。</view>
         <view class="rule">某个等级数据缺失时会自动跳过，不记为答错。</view>

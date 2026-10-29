@@ -3,15 +3,15 @@ const engine = require("../../lib/engine");
 const quiz = require("../../lib/quiz");
 const storage = require("../../lib/storage");
 const nav = require("../../lib/nav");
+const levels = require("../../lib/levels");
 
 const LEVELS = [
   { n: 1, label: "形" },
   { n: 2, label: "音" },
-  { n: 3, label: "全音" },
-  { n: 4, label: "义" },
-  { n: 5, label: "写" },
-  { n: 6, label: "用" },
-  { n: 7, label: "源" },
+  { n: 3, label: "义" },
+  { n: 4, label: "写" },
+  { n: 5, label: "用" },
+  { n: 6, label: "源" },
 ];
 
 function decorate(options, selected) {
@@ -30,6 +30,8 @@ Page({
     char: "",
     layout: "grid",
     level: 0,
+    levelMark: "",
+    questionMark: "",
     total: 0,
     index: 0,
     progressText: "",
@@ -102,8 +104,10 @@ onLoad(options) {
     this.setData({
       question: q,
       char: q.char,
-      layout: q.level === 4 ? "list" : "grid",
+      layout: q.level === 3 ? "list" : "grid",
       level: this.test.level,
+      levelMark: levels.markOf(this.test.level),
+      questionMark: levels.markOf(q.level),
       optionViews: decorate(q.options, []),
       selected: [],
       multi: q.type === "multi",
@@ -166,12 +170,13 @@ onLoad(options) {
       isCorrect: correct,
       optionViews: views,
       level: this.test.level,
+      levelMark: levels.markOf(this.test.level),
       feedback: correct ? "回答正确" : "回答错误",
       feedbackSub: correct
         ? this.test.queue && this.test.queue.length
           ? "回答正确，继续"
-          : "达到 L" + q.level + " " + q.levelName
-        : "停在 L" + this.test.level + " " + quiz.LEVEL_NAMES[this.test.level],
+          : "达到 " + levels.markOf(q.level) + " " + q.levelName
+        : "停在 " + levels.markOf(this.test.level) + " " + quiz.LEVEL_NAMES[this.test.level],
       answerText: q.answer.join(" / "),
       nextText: nextText,
     });

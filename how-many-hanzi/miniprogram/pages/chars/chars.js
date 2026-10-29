@@ -1,7 +1,9 @@
 const storage = require("../../lib/storage");
 const nav = require("../../lib/nav");
+const levels = require("../../lib/levels");
+const charsLib = require("../../lib/chars");
 
-const LEVEL_NAMES = ["未识", "识形", "知音", "全音", "明义", "能写", "善用", "通源"];
+const LEVEL_NAMES = ["未识", "识形", "读音", "明义", "能写", "善用", "通源"];
 
 Page({
   data: {
@@ -10,6 +12,10 @@ Page({
     groups: [],
     hasData: false,
     manage: false,
+    totalChars: 0,
+    coverage: 0,
+    mastery: 0,
+    rank: "",
   },
 
   onReady() {
@@ -21,32 +27,56 @@ Page({
   },
 
   load() {
-    const levels = storage.getCharLevels();
-    const chars = Object.keys(levels)
-      .map((ch) => ({ char: ch, level: levels[ch] }))
+    const charLevels = storage.getCharLevels();
+    const list = Object.keys(charLevels)
+      .map((ch) => ({
+        char: ch,
+        level: charLevels[ch],
+        mark: levels.markOf(charLevels[ch]),
+      }))
       .sort((a, b) => (a.char < b.char ? -1 : a.char > b.char ? 1 : 0));
 
-    const counts = [0, 0, 0, 0, 0, 0, 0, 0];
-    chars.forEach((c) => counts[c.level]++);
+    const counts = [0, 0, 0, 0, 0, 0, 0];
+    list.forEach((c) => {
+      if (counts[c.level] !== undefined) counts[c.level]++;
+    });
     const max = Math.max.apply(null, counts.concat([1]));
-    const dist = counts.map((c, level) => ({
-      level: level,
+    const dist = counts.map((c, lv) => ({
+      level: lv,
+      mark: levels.markOf(lv),
       count: c,
       pct: Math.round((c / max) * 100),
     }));
 
     const groups = [];
-    for (let lv = 7; lv >= 0; lv--) {
-      const list = chars.filter((c) => c.level === lv);
-      if (!list.length) continue;
-      groups.push({ level: lv, name: LEVEL_NAMES[lv], chars: list });
+    for (let lv = 6; lv >= 0; lv--) {
+      const g = list.filter((c) => c.level === lv);
+      if (!g.length) continue;
+      groups.push({ level: lv, mark: levels.markOf(lv), name: LEVEL_NAMES[lv], chars: g });
     }
 
+    const totalChars = charsLib.allChars.length;
+    let sum = 0;
+    list.forEach((c) => {
+      sum += c.level;
+    });
+    const coverage = list.length
+      ? Math.round((list.length / totalChars) * 10000) / 100
+      : 0;
+    const depth = list.length ? sum / (list.length * 6) : 0;
+    const confidence = list.length ? Math.sqrt(list.length / totalChars) : 0;
+    const mastery = Math.round(depth * confidence * 100);
+    const rank = levels.rankOf(mastery);
+
     this.setData({
-      count: chars.length,
+      count: list.length,
       dist: dist,
       groups: groups,
-      hasData: chars.length > 0,
+      hasData: list.length > 0,
+      totalChars: totalChars,
+      coverage: coverage,
+      mastery: mastery,
+      rank: rank,
     });
   },
 

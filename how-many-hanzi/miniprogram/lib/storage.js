@@ -1,9 +1,13 @@
+const levelsLib = require("./levels");
+
 const KEY_SETTINGS = "hmh:settings";
 const KEY_HISTORY = "hmh:history";
 const KEY_CHAR_LEVELS = "hmh:charLevels";
 const KEY_RECENT_CHARS = "hmh:recentChars";
+const KEY_SCHEMA = "hmh:schemaVersion";
+const SCHEMA_VERSION = 2;
 const MAX_HISTORY = 50;
-const MAX_RECENT_CHARS = 50;
+const MAX_RECENT_CHARS = 300;
 
 const DEFAULT_SETTINGS = {
   scope: 4,
@@ -101,6 +105,43 @@ function clearAll() {
   write(KEY_CHAR_LEVELS, {});
 }
 
+function migrateLegacyLevel(lv) {
+  const n = Number(lv) || 0;
+  if (n <= 2) return n;
+  if (n === 3) return 2;
+  return Math.min(n - 1, 6);
+}
+
+function migrate() {
+  const version = Number(read(KEY_SCHEMA, 1)) || 1;
+  if (version >= SCHEMA_VERSION) return false;
+
+  const levels = getCharLevels();
+  const nextLevels = {};
+  Object.keys(levels).forEach((ch) => {
+    nextLevels[ch] = migrateLegacyLevel(levels[ch]);
+  });
+  write(KEY_CHAR_LEVELS, nextLevels);
+
+  const recent = getRecentChars().map((r) =>
+    Object.assign({}, r, { level: migrateLegacyLevel(r.level) })
+  );
+  write(KEY_RECENT_CHARS, recent);
+
+  const history = getHistory().map((h) => {
+    const avg = migrateLegacyLevel(Math.round(Number(h.avgLevel) || 0));
+    return Object.assign({}, h, {
+      avgLevel: avg,
+      avgLevelText: levelsLib.avgText(avg),
+      mastery: Math.round((avg / 6) * 100),
+    });
+  });
+  write(KEY_HISTORY, history);
+
+  write(KEY_SCHEMA, SCHEMA_VERSION);
+  return true;
+}
+
 function removeChar(ch) {
   const m = getCharLevels();
   if (ch in m) {
@@ -131,4 +172,5 @@ module.exports = {
   clearAll,
   removeChar,
   removeHistoryAt,
+  migrate,
 };

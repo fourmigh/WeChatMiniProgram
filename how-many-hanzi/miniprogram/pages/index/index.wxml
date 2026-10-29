@@ -1,7 +1,7 @@
 <view class="page">
   <view class="page-head">
     <view class="page-title">我到底认识几个汉字</view>
-    <view class="page-sub">从识形到通源，八级汉字能力自测 · 共 {{totalChars}} 字</view>
+    <view class="page-sub">从识形到通源，六级汉字能力自测 · 共 {{totalChars}} 字</view>
   </view>
 
   <scroll-view scroll-y enhanced="{{true}}" show-scrollbar="{{false}}" class="page-body">
@@ -71,7 +71,13 @@
             <view class="section-title last-title">上次成绩</view>
             <view class="muted">{{lastResult.scopeName}} · {{lastResult.count}} 字 · {{lastResult.dateText}}</view>
           </view>
-          <view class="last-level">{{lastResult.avgLevelText}}</view>
+          <view class="last-right">
+            <view class="last-level">
+              <text class="lv-mark sm lv{{lastResult.avgLevelRound}}">{{lastResult.avgMark}}</text>
+              <text class="last-avg">{{lastResult.avgValue}}</text>
+            </view>
+            <view class="last-rank"><text class="lv-rank sm">{{lastResult.rank}}</text></view>
+          </view>
         </view>
       </view>
     </view>

@@ -1,23 +1,25 @@
-.recent-more {
-  font-size: 26rpx;
-  color: #c8553d;
-  padding: 4rpx 8rpx;
+.day-label {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #22333b;
 }
 
-.recent-strip {
-  white-space: nowrap;
-  margin-top: 8rpx;
+.day-chars {
+  display: flex;
+  flex-wrap: wrap;
+  margin: calc(var(--sp-2xs) * -1);
+  margin-top: var(--sp-2xs);
 }
 
 .recent-cell {
-  display: inline-flex;
+  display: flex;
   flex-direction: column;
   align-items: center;
-  width: 96rpx;
-  height: 110rpx;
+  width: 88rpx;
+  height: 104rpx;
   border: 2rpx solid #e3dbcf;
   border-radius: 12rpx;
-  margin-right: 14rpx;
+  margin: 6rpx;
   overflow: hidden;
   background: #fbf9f4;
 }
@@ -30,21 +32,22 @@
   margin-top: 12rpx;
 }
 
-.recent-level {
+.recent-cell .lv-mark {
   margin-top: auto;
-  width: 100%;
-  text-align: center;
-  font-size: 20rpx;
-  line-height: 1.6;
-  color: #ffffff;
-  font-weight: 600;
+  margin-bottom: 8rpx;
 }
 
 .record-level {
-  font-size: 44rpx;
+  display: flex;
+  align-items: center;
+  line-height: 1.2;
+}
+
+.record-avg {
+  margin-left: 8rpx;
+  font-size: 40rpx;
   font-weight: 700;
   color: #22333b;
-  line-height: 1.2;
 }
 
 .record {

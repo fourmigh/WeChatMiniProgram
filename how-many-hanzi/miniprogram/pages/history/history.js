@@ -1,30 +1,77 @@
 const storage = require("../../lib/storage");
 const nav = require("../../lib/nav");
+const levels = require("../../lib/levels");
+
+function pad2(n) {
+  return n < 10 ? "0" + n : "" + n;
+}
+
+function dayKey(dateText) {
+  const s = String(dateText || "");
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) return m[1] + "-" + m[2] + "-" + m[3];
+  return "";
+}
+
+function dayLabel(key) {
+  const now = new Date();
+  const today = now.getFullYear() + "-" + pad2(now.getMonth() + 1) + "-" + pad2(now.getDate());
+  const y = new Date(now.getTime() - 86400000);
+  const yesterday = y.getFullYear() + "-" + pad2(y.getMonth() + 1) + "-" + pad2(y.getDate());
+  const parts = key.split("-");
+  const md = parts.length === 3 ? Number(parts[1]) + "月" + Number(parts[2]) + "日" : key;
+  if (key === today) return "今天 · " + md;
+  if (key === yesterday) return "昨天 · " + md;
+  if (!key) return "未知日期";
+  return md;
+}
 
 Page({
   data: {
     list: [],
     hasData: false,
-    recent: [],
-    hasRecent: false,
+    days: [],
+    hasDays: false,
   },
 
-    onReady() {
+  onReady() {
     nav.ready();
   },
 
-onShow() {
+  onShow() {
     this.load();
   },
 
   load() {
-    const list = storage.getHistory();
+    const list = storage.getHistory().map((h) => {
+      const avg = Number(h.avgLevel) || 0;
+      return Object.assign({}, h, {
+        avgText: levels.avgText(avg),
+        avgMark: levels.markOf(Math.min(Math.round(avg), 6)),
+        avgLevelRound: Math.min(Math.round(avg), 6),
+        avgValue: "等 " + avg.toFixed(1),
+      });
+    });
     const recent = storage.getRecentChars();
+
+    const dayMap = {};
+    const dayOrder = [];
+    recent.forEach((r) => {
+      const key = dayKey(r.dateText);
+      if (!dayMap[key]) {
+        dayMap[key] = { day: key, label: dayLabel(key), chars: [] };
+        dayOrder.push(key);
+      }
+      dayMap[key].chars.push(
+        Object.assign({}, r, { mark: levels.markOf(r.level) })
+      );
+    });
+
     this.setData({
       list: list,
       hasData: list.length > 0,
-      recent: recent,
-      hasRecent: recent.length > 0,
+      days: dayOrder.map((k) => dayMap[k]),
+      hasDays: dayOrder.length > 0,
     });
   },
 

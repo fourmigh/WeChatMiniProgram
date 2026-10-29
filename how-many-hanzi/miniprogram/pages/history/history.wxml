@@ -1,55 +1,59 @@
 <view class="page">
   <view class="page-head">
     <view class="page-title">历史记录</view>
-    <view class="page-sub">自测成绩与最近测过的字</view>
+    <view class="page-sub">按日期看测字流水与自测成绩</view>
   </view>
 
   <scroll-view scroll-y enhanced="{{true}}" show-scrollbar="{{false}}" class="page-body">
     <view class="container">
-      <block wx:if="{{hasData || hasRecent}}">
-        <view class="card" wx:if="{{hasRecent}}">
+      <block wx:if="{{hasDays}}">
+        <view class="card day-card" wx:for="{{days}}" wx:key="day">
           <view class="row between">
-            <view class="section-title">最近测过的字</view>
-            <view class="recent-more" bindtap="goChars">全部 ›</view>
+            <view class="day-label">{{item.label}}</view>
+            <view class="muted">{{item.chars.length}} 个字</view>
           </view>
-          <scroll-view scroll-x class="recent-strip">
+          <view class="day-chars">
             <view
               class="recent-cell"
-              wx:for="{{recent}}"
+              wx:for="{{item.chars}}"
+              wx:for-item="c"
               wx:key="id"
-              data-char="{{item.char}}"
+              data-char="{{c.char}}"
               bindtap="retryChar"
             >
-              <view class="recent-char">{{item.char}}</view>
-              <view class="recent-level lv{{item.level}}">L{{item.level}}</view>
-            </view>
-          </scroll-view>
-        </view>
-
-        <block wx:if="{{hasData}}">
-          <view class="card record" wx:for="{{list}}" wx:key="createdAt" wx:for-index="idx">
-            <view class="record-del" data-index="{{idx}}" bindtap="deleteRecord">×</view>
-            <view class="row between">
-              <view>
-                <view class="record-level">{{item.avgLevelText}}</view>
-                <view class="muted">{{item.scopeName}} · {{item.count}} 字</view>
-              </view>
-              <view class="record-right">
-                <view class="record-mastery">{{item.mastery}}%</view>
-                <view class="muted">掌握度</view>
-              </view>
-            </view>
-            <view class="record-foot">
-              <view class="muted">估算认识 {{item.estimated}} 字</view>
-              <view class="muted">{{item.dateText}}</view>
+              <view class="recent-char">{{c.char}}</view>
+              <view class="lv-mark sm lv{{c.level}}">{{c.mark}}</view>
             </view>
           </view>
-
-          <view class="btn ghost mt" bindtap="clearAll">清空全部</view>
-        </block>
+        </view>
       </block>
 
-      <view class="empty" wx:else>
+      <block wx:if="{{hasData}}">
+        <view class="card record" wx:for="{{list}}" wx:key="createdAt" wx:for-index="idx">
+          <view class="record-del" data-index="{{idx}}" bindtap="deleteRecord">×</view>
+          <view class="row between">
+            <view>
+              <view class="record-level">
+                <text class="lv-mark sm lv{{item.avgLevelRound}}">{{item.avgMark}}</text>
+                <text class="record-avg">{{item.avgValue}}</text>
+              </view>
+              <view class="muted">{{item.scopeName}} · {{item.count}} 字</view>
+            </view>
+            <view class="record-right">
+              <view class="record-mastery">{{item.mastery}}%</view>
+              <view class="muted">掌握度</view>
+            </view>
+          </view>
+          <view class="record-foot">
+            <view class="muted">估算认识 {{item.estimated}} 字</view>
+            <view class="muted">{{item.dateText}}</view>
+          </view>
+        </view>
+      </block>
+
+      <view class="btn ghost mt" wx:if="{{hasData || hasDays}}" bindtap="clearAll">清空全部</view>
+
+      <view class="empty" wx:if="{{!hasData && !hasDays}}">
         <view class="empty-title">还没有测字记录</view>
         <view class="muted">测一个字或做一次整体自测，就会出现在这里。</view>
       </view>

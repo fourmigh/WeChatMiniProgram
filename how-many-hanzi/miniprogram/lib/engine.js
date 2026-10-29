@@ -1,8 +1,9 @@
 const chars = require("./chars");
 const quiz = require("./quiz");
+const levels = require("./levels");
 const { shuffle, pickN } = require("./utils");
 
-const MAX_LEVEL = 7;
+const MAX_LEVEL = 6;
 
 function createCharTest(ch) {
   return {
@@ -110,7 +111,7 @@ function summarize(session) {
   return {
     count: results.length,
     avgLevel: avg,
-    avgLevelText: "L" + avg.toFixed(1),
+    avgLevelText: levels.avgText(avg),
     mastery: Math.round(mastery),
     distribution: distribution,
     scopeTotal: scopeTotal,

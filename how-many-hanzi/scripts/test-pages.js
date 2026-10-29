@@ -152,9 +152,19 @@ function runQuiz(options, label) {
 
 const singleResult = runQuiz({ mode: "single", char: encodeURIComponent("行"), scope: "4" }, "single");
 check("single result mode", singleResult && singleResult.mode === "single");
-check("single level 7", singleResult && singleResult.level === 7, singleResult && singleResult.level);
+check("single level 6", singleResult && singleResult.level === 6, singleResult && singleResult.level);
 const recentAfterSingle = global.wx.getStorageSync("hmh:recentChars");
-check("single recent stored", recentAfterSingle.length === 1 && recentAfterSingle[0].char === "行" && recentAfterSingle[0].level === 7, JSON.stringify(recentAfterSingle[0] || {}));
+check("single recent stored", recentAfterSingle.length === 1 && recentAfterSingle[0].char === "行" && recentAfterSingle[0].level === 6, JSON.stringify(recentAfterSingle[0] || {}));
+
+const singleResultPage = loadPage("result/result.js", { mode: "single" });
+const singleLogs = singleResultPage.data.logRows || [];
+check(
+  "result single logRows aggregated",
+  singleLogs.length >= 1 &&
+    singleLogs.every((r) => r.text === "✓" || r.text === "✗" || /^\d+\/\d+$/.test(r.text)) &&
+    singleLogs.every((r, i) => i === 0 || singleLogs[i - 1].level < r.level),
+  JSON.stringify(singleLogs)
+);
 
 const testResult = runQuiz({ mode: "test", scope: "0", size: "2" }, "test");
 check("test result mode", testResult && testResult.mode === "test");
@@ -167,15 +177,55 @@ check("char levels stored", Object.keys(charLevelsAfter).length === 3, "chars=" 
 const resultPage = loadPage("result/result.js", { mode: "test" });
 check("result has data", resultPage.data.hasResult === true);
 check("result bars", resultPage.data.bars.length === 8, "bars=" + resultPage.data.bars.length);
+check("result rank", typeof resultPage.data.rank === "string" && resultPage.data.rank.length > 0, resultPage.data.rank);
 
 const intro = loadPage("intro/intro.js");
-check("intro levels", intro.data.levels.length === 8);
+check("intro levels", intro.data.levels.length === 7);
+check(
+  "intro ranks",
+  intro.data.ranks.length === 7 &&
+    intro.data.ranks[0].name === "蒙童" &&
+    intro.data.ranks[6].name === "状元" &&
+    intro.data.ranks[6].range === "≥ 85%",
+  JSON.stringify(intro.data.ranks.map((r) => r.name))
+);
+check(
+  "intro level marks",
+  intro.data.levels[0].mark === "庚" &&
+    intro.data.levels[1].mark === "己" &&
+    intro.data.levels[6].mark === "甲",
+  JSON.stringify(intro.data.levels.map((x) => x.mark))
+);
+
+const levelsLib = require(path.join(__dirname, "..", "miniprogram", "lib", "levels.js"));
+check(
+  "levels helpers",
+  levelsLib.markOf(0) === "庚" &&
+    levelsLib.markOf(3) === "丁" &&
+    levelsLib.labelOf(3, "明义") === "丁 · 明义" &&
+    levelsLib.rankOf(72) === "进士" &&
+    levelsLib.rankOf(5) === "蒙童" &&
+    levelsLib.avgText(4) === "丙等 4.0"
+);
 check("intro scopes", intro.data.scopes.length === 5);
 
 const charsPage = loadPage("chars/chars.js");
 charsPage.onShow();
 check("chars count", charsPage.data.count === 3, "count=" + charsPage.data.count);
-check("chars dist", charsPage.data.dist.length === 8);
+check("chars dist", charsPage.data.dist.length === 7);
+check(
+  "chars progress",
+  charsPage.data.mastery >= 0 &&
+    charsPage.data.mastery <= 5 &&
+    charsPage.data.rank === "蒙童" &&
+    charsPage.data.coverage > 0 &&
+    charsPage.data.totalChars === 8105,
+  JSON.stringify({
+    coverage: charsPage.data.coverage,
+    mastery: charsPage.data.mastery,
+    rank: charsPage.data.rank,
+  })
+);
 check("chars groups nonempty", charsPage.data.groups.length > 0 && charsPage.data.groups.every((g) => g.chars.length > 0), "groups=" + charsPage.data.groups.map((g) => "L" + g.level + ":" + g.chars.length).join(","));
 
 charsPage.toggleManage();
@@ -202,11 +252,24 @@ check("chars go home nav", lastNav === "/pages/index/index", lastNav);
 
 const history = loadPage("history/history.js");
 history.onShow();
+const indexAgain = loadPage("index/index.js");
+check(
+  "index last rank",
+  indexAgain.data.lastResult && typeof indexAgain.data.lastResult.rank === "string" && indexAgain.data.lastResult.rank.length > 0,
+  JSON.stringify(indexAgain.data.lastResult && indexAgain.data.lastResult.rank)
+);
 check("history has record", history.data.hasData === true, "len=" + history.data.list.length);
 check(
-  "history recent strip after char delete",
-  history.data.hasRecent === true && history.data.recent.length === 2,
-  "recent=" + history.data.recent.length
+  "history days grouped after char delete",
+  history.data.hasDays === true &&
+    history.data.days.length === 1 &&
+    history.data.days[0].chars.length === 2,
+  "days=" + history.data.days.length + " first=" + (history.data.days[0] ? history.data.days[0].chars.length : 0)
+);
+check(
+  "history day label",
+  history.data.days[0].label.indexOf("今天") > -1 || /^\d+月\d+日$/.test(history.data.days[0].label),
+  history.data.days[0].label
 );
 lastNav = null;
 history.goChars();
@@ -221,7 +284,7 @@ check(
   "len=" + history.data.list.length
 );
 history.clearAll();
-check("history cleared", history.data.hasData === false && history.data.hasRecent === false);
+check("history cleared", history.data.hasData === false && history.data.hasDays === false);
 check("chars cleared", loadPage("chars/chars.js").data.hasData === false);
 lastNav = null;
 history.goHome();
@@ -233,6 +296,36 @@ check("result again retest nav", lastNav && lastNav.indexOf("mode=test") > -1 &&
 lastNav = null;
 resultPage.goHome();
 check("result go home nav", lastNav === "/pages/index/index", lastNav);
+
+// —— 等级体系迁移（旧 8 级 -> 新 6 级）——
+const storageLib = require(path.join(__dirname, "..", "miniprogram", "lib", "storage.js"));
+global.wx.setStorageSync("hmh:schemaVersion", 1);
+global.wx.setStorageSync("hmh:charLevels", { 好: 7, 行: 4, 学: 3, 一: 2, 的: 0 });
+global.wx.setStorageSync("hmh:recentChars", [
+  { char: "好", level: 7, id: "a" },
+  { char: "学", level: 3, id: "b" },
+]);
+global.wx.setStorageSync("hmh:history", [
+  { avgLevel: 5, avgLevelText: "L5.0", mastery: 71, scopeName: "全部", count: 20 },
+]);
+check("migrate runs", storageLib.migrate() === true);
+const migLevels = global.wx.getStorageSync("hmh:charLevels");
+check(
+  "migrate charLevels",
+  migLevels["好"] === 6 && migLevels["行"] === 3 && migLevels["学"] === 2 && migLevels["一"] === 2 && migLevels["的"] === 0,
+  JSON.stringify(migLevels)
+);
+const migRecent = global.wx.getStorageSync("hmh:recentChars");
+check("migrate recentChars", migRecent[0].level === 6 && migRecent[1].level === 2, JSON.stringify(migRecent));
+const migHistory = global.wx.getStorageSync("hmh:history");
+check(
+  "migrate history",
+  migHistory[0].avgLevel === 4 &&
+    migHistory[0].mastery === 67 &&
+    migHistory[0].avgLevelText === "丙等 4.0",
+  JSON.stringify(migHistory[0])
+);
+check("migrate idempotent", storageLib.migrate() === false);
 
 console.log(results.join("\n"));
 const failed = results.filter((r) => r.indexOf("FAIL") === 0);

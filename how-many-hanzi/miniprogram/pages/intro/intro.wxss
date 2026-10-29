@@ -12,13 +12,8 @@
 .level-no {
   width: 84rpx;
   flex-shrink: 0;
-  font-size: 30rpx;
-  font-weight: 700;
-  color: #c8553d;
-}
-
-.level-no.zero {
-  color: #a29a8e;
+  display: flex;
+  align-items: center;
 }
 
 .level-body {
@@ -72,4 +67,39 @@
   height: 10rpx;
   border-radius: 50%;
   background: #c8553d;
+}
+
+.level-note {
+  margin-bottom: 12rpx;
+}
+
+.rank-row {
+  display: flex;
+  align-items: center;
+  padding: 12rpx 0;
+  border-bottom: 1rpx solid #f0ebe2;
+}
+
+.rank-row:last-child {
+  border-bottom: none;
+}
+
+.rank-name {
+  width: 130rpx;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.rank-range {
+  width: 140rpx;
+  font-size: 24rpx;
+  color: #55636b;
+  flex-shrink: 0;
+}
+
+.rank-desc {
+  flex: 1;
+  font-size: 24rpx;
+  color: #7a858c;
 }

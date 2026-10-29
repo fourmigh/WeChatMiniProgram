@@ -2,7 +2,7 @@
   <view class="quiz-head">
     <view class="top-bar">
       <view class="progress-text">{{progressText}}</view>
-      <view class="level-badge">L{{level}}</view>
+      <view class="lv-mark lv{{level}}">{{levelMark}}</view>
     </view>
 
     <view class="level-track">
@@ -18,7 +18,10 @@
 
     <view class="char-stage">
       <view class="char">{{char}}</view>
-      <view class="level-tag" wx:if="{{question}}">L{{question.level}} · {{question.levelName}}</view>
+      <view class="level-tag" wx:if="{{question}}">
+        <text class="lv-mark sm lv{{question.level}}">{{questionMark}}</text>
+        <text class="level-tag-text">· {{question.levelName}}</text>
+      </view>
     </view>
   </view>
 
