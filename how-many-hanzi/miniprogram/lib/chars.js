@@ -61,12 +61,23 @@ function listScopes() {
   }));
 }
 
+function getTierChars(tier) {
+  const t = Number(tier);
+  if (!isFinite(t) || t < 0 || t >= tierChars.length) return [];
+  return tierChars[t].slice();
+}
+
 function getCharsByScope(scope) {
-  const scopes = [];
-  for (let i = 0; i <= scope && i < tierChars.length; i++) {
-    scopes.push.apply(scopes, tierChars[i]);
+  const s = Number(scope);
+  if (!isFinite(s) || s >= tierChars.length - 1) {
+    // 全部档按难度倒序：其余 → 高中 → 初中 → 小学 → 启蒙
+    const out = [];
+    for (let i = tierChars.length - 1; i >= 0; i--) {
+      out.push.apply(out, tierChars[i]);
+    }
+    return out;
   }
-  return scopes;
+  return getTierChars(Math.max(0, s));
 }
 
 function getExplain(ch) {
@@ -142,6 +153,7 @@ module.exports = {
   strokeMap,
   polyChars,
   listScopes,
+  getTierChars,
   getCharsByScope,
   getExplain,
   getRadical,

@@ -12,6 +12,7 @@ Page({
       scopes: [],
       scope: 0,
       scopeName: "",
+      subText: "",
       keyword: "",
       pool: [],
       chars: [],
@@ -54,10 +55,25 @@ Page({
 
   loadScope(scope) {
     const pool = chars.getCharsByScope(scope);
-    const scopeName = chars.listScopes()[scope].name;
+    const info = chars.listScopes()[scope];
+    let subText;
+    if (scope === 0) {
+      subText = info.name + " · 共 " + info.count + " 字";
+    } else if (scope >= 4) {
+      subText = "全部 · 共 " + chars.allChars.length + " 字";
+    } else {
+      subText =
+        info.name +
+        " · 共 " +
+        info.count +
+        " 字（本档新字 " +
+        chars.getTierChars(scope).length +
+        "）";
+    }
     this.setData({
       scope: scope,
-      scopeName: scopeName,
+      scopeName: info.name,
+      subText: subText,
       keyword: "",
       pool: pool,
       batch: BATCH,
@@ -74,11 +90,36 @@ Page({
     const pool = this.data.pool;
     const levelsMap = storage.getCharLevels();
     const list = [];
+
+    let segments = [];
+    if (this.data.scope >= 4) {
+      const order = [4, 3, 2, 1, 0];
+      let cursor = 0;
+      for (const t of order) {
+        const len = chars.getTierChars(t).length;
+        segments.push({ start: cursor, name: chars.tierNames[t], count: len });
+        cursor += len;
+      }
+    }
+
+    let si = 0;
     for (let i = 0; i < pool.length && i < count; i++) {
+      while (si < segments.length && segments[si].start === i) {
+        list.push({
+          type: "divider",
+          key: "d-" + segments[si].name,
+          title: segments[si].name,
+          count: segments[si].count,
+        });
+        si++;
+      }
       const ch = pool[i];
       const lv = levelsMap[ch];
       list.push({
+        type: "char",
+        key: "c-" + i,
         char: ch,
+        poolIndex: i,
         level: lv === undefined ? -1 : lv,
         mark: lv === undefined ? "" : levels.markOf(lv),
       });
@@ -115,7 +156,10 @@ Page({
     this.setData({
       chars: [
         {
+          type: "char",
+          key: "c-search",
           char: ch,
+          poolIndex: all.indexOf(ch),
           level: lv === undefined ? -1 : lv,
           mark: lv === undefined ? "" : levels.markOf(lv),
         },

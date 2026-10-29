@@ -51,7 +51,7 @@ function applyAnswer(test, question, correct) {
 
 function sampleChars(scope, sampleSize) {
   if (scope >= 4) {
-    const weights = [0.072, 0.528, 0.25, 0.1, 0.05];
+    const weights = [0.05, 0.1, 0.2, 0.3, 0.35];
     const picked = [];
     for (let t = 0; t < chars.tierChars.length; t++) {
       let n = Math.round(weights[t] * sampleSize);

@@ -52,7 +52,8 @@
           <view class="scope-name">{{item.name}}</view>
           <view class="scope-count">{{item.count}} 字 ›</view>
         </view>
-        <view class="muted mt">全部字库共 {{total}} 字，按启蒙、小学、初中、高中逐级累进。点击档位可浏览该档全部字。</view>
+        <view class="muted mt">全部字库共 {{total}} 字，按启蒙、小学、初中、高中逐级累进。</view>
+        <view class="muted mt">档位字数为累计值，选择后只包含该档新增的字。</view>
       </view>
 
       <view class="card">

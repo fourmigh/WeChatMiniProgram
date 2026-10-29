@@ -262,24 +262,34 @@ const listPage = loadPage("chars-list/chars-list.js", { scope: "1" });
 check(
   "list default scope",
   listPage.data.scope === 1 &&
-    listPage.data.pool.length === 2501 &&
-    listPage.data.scopeName === "小学",
-  JSON.stringify({ scope: listPage.data.scope, pool: listPage.data.pool.length })
+    listPage.data.pool.length === 2201 &&
+    listPage.data.scopeName === "小学" &&
+    listPage.data.subText === "小学 · 共 2501 字（本档新字 2201）",
+  JSON.stringify({
+    scope: listPage.data.scope,
+    pool: listPage.data.pool.length,
+    sub: listPage.data.subText,
+  })
 );
 check(
   "list first batch",
-  listPage.data.chars.length === 200 && listPage.data.hasMore === true,
+  listPage.data.chars.length === 200 &&
+    listPage.data.chars.every((x) => x.type === "char") &&
+    listPage.data.hasMore === true,
   "chars=" + listPage.data.chars.length
 );
 
-listPage.onSearch({ detail: { value: "一" } });
+const somePrimaryChar = listPage.data.pool[0];
+listPage.onSearch({ detail: { value: somePrimaryChar } });
 check(
   "list search hit",
-  listPage.data.chars.length === 1 && listPage.data.chars[0].char === "一"
+  listPage.data.chars.length === 1 &&
+    listPage.data.chars[0].char === somePrimaryChar,
+  "char=" + somePrimaryChar
 );
-listPage.onSearch({ detail: { value: "魑" } });
+listPage.onSearch({ detail: { value: "一" } });
 check(
-  "list search miss",
+  "list search miss (tier0 char not in primary)",
   listPage.data.chars.length === 0 && listPage.data.emptyHint.length > 0,
   listPage.data.emptyHint
 );
@@ -291,8 +301,58 @@ check(
   "list scope switch",
   listPage.data.scope === 4 &&
     listPage.data.pool.length === 8105 &&
-    listPage.data.scopeName === "全部",
-  JSON.stringify({ scope: listPage.data.scope, pool: listPage.data.pool.length })
+    listPage.data.scopeName === "全部" &&
+    listPage.data.subText === "全部 · 共 8105 字",
+  JSON.stringify({
+    scope: listPage.data.scope,
+    pool: listPage.data.pool.length,
+    sub: listPage.data.subText,
+  })
+);
+check(
+  "list all-scope tier dividers",
+  listPage.data.chars[0].type === "divider" &&
+    listPage.data.chars[0].title === "全部" &&
+    listPage.data.chars.filter((x) => x.type === "divider").length === 1 &&
+    listPage.data.chars.filter((x) => x.type === "char").length === 200,
+  JSON.stringify({
+    first: listPage.data.chars[0],
+    dividers: listPage.data.chars.filter((x) => x.type === "divider").length,
+  })
+);
+
+listPage.setData({ batch: 3000 });
+listPage.renderBatch();
+const dividersAfterLoad = listPage.data.chars.filter((x) => x.type === "divider");
+check(
+  "list dividers after load-more",
+  dividersAfterLoad.length === 2 && dividersAfterLoad[1].title === "高中",
+  JSON.stringify(dividersAfterLoad.map((d) => d.title))
+);
+
+const listZero = loadPage("chars-list/chars-list.js", { scope: "0" });
+check(
+  "list 启蒙 subText",
+  listZero.data.pool.length === 300 &&
+    listZero.data.subText === "启蒙 · 共 300 字",
+  JSON.stringify({ pool: listZero.data.pool.length, sub: listZero.data.subText })
+);
+
+const charsLibForScope = require(path.join(__dirname, "..", "miniprogram", "lib", "chars.js"));
+check(
+  "scopes keep cumulative counts",
+  JSON.stringify(charsLibForScope.listScopes().map((s) => s.count)) ===
+    JSON.stringify([300, 2501, 3500, 5500, 8105]),
+  JSON.stringify(charsLibForScope.listScopes().map((s) => s.count))
+);
+check(
+  "getCharsByScope is per-tier",
+  charsLibForScope.getCharsByScope(0).length === 300 &&
+    charsLibForScope.getCharsByScope(1).length === 2201 &&
+    charsLibForScope.getCharsByScope(2).length === 999 &&
+    charsLibForScope.getCharsByScope(3).length === 2000 &&
+    charsLibForScope.getCharsByScope(4).length === 8105,
+  JSON.stringify([0, 1, 2, 3, 4].map((s) => charsLibForScope.getCharsByScope(s).length))
 );
 
 const targetIdx = listPage.data.pool.indexOf("魑");

@@ -45,6 +45,29 @@
   box-sizing: border-box;
 }
 
+.tier-divider {
+  flex-basis: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  margin: 18rpx 6rpx 10rpx;
+  box-sizing: border-box;
+}
+
+.tier-line {
+  flex: 1;
+  height: 1rpx;
+  background: #e3dbcf;
+}
+
+.tier-title {
+  margin: 0 18rpx;
+  font-size: 22rpx;
+  color: #a29a8e;
+  letter-spacing: 1rpx;
+  white-space: nowrap;
+}
+
 .char-mini.target {
   border-color: #c8553d;
   background: #fbeeea;

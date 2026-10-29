@@ -57,6 +57,7 @@
             bindtap="selectScope"
           >{{item.name}} {{item.count}}</view>
         </view>
+        <view class="muted scope-note">档位字数为累计值，选择后只包含该档新增的字。</view>
 
         <view class="field-label">抽样字数</view>
         <view class="chips">

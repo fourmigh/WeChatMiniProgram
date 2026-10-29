@@ -1,7 +1,7 @@
 <view class="page">
   <view class="page-head">
     <view class="page-title">字库</view>
-    <view class="page-sub">{{scopeName}}档 · 共 {{pool.length}} 字</view>
+    <view class="page-sub">{{subText}}</view>
   </view>
 
   <view class="list-head">
@@ -36,18 +36,24 @@
       <view class="container">
         <view class="muted list-hint" wx:if="{{emptyHint}}">{{emptyHint}}</view>
         <view class="cell-grid">
-          <view
-            wx:for="{{chars}}"
-            wx:key="char"
-            id="cell-{{index}}"
-            class="char-mini {{highlightIndex === index ? 'target' : ''}}"
-            data-char="{{item.char}}"
-            data-index="{{index}}"
-            bindtap="goDetail"
-          >
-            <view class="mini-char">{{item.char}}</view>
-            <view wx:if="{{item.mark}}" class="mini-level lv{{item.level}}">{{item.mark}}</view>
-          </view>
+          <block wx:for="{{chars}}" wx:key="key">
+            <view wx:if="{{item.type === 'divider'}}" class="tier-divider">
+              <view class="tier-line"></view>
+              <text class="tier-title">{{item.title}} · {{item.count}} 字</text>
+              <view class="tier-line"></view>
+            </view>
+            <view
+              wx:else
+              id="cell-{{item.poolIndex}}"
+              class="char-mini {{highlightIndex === item.poolIndex ? 'target' : ''}}"
+              data-char="{{item.char}}"
+              data-index="{{item.poolIndex}}"
+              bindtap="goDetail"
+            >
+              <view class="mini-char">{{item.char}}</view>
+              <view wx:if="{{item.mark}}" class="mini-level lv{{item.level}}">{{item.mark}}</view>
+            </view>
+          </block>
         </view>
         <view class="muted list-more" wx:if="{{hasMore}}">上滑加载更多…</view>
       </view>

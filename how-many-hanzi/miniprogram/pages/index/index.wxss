@@ -149,6 +149,11 @@
   margin: var(--sp-sm) 0 var(--sp-2xs);
 }
 
+.scope-note {
+  margin-top: var(--sp-2xs);
+  font-size: 22rpx;
+}
+
 .last-title {
   margin-bottom: var(--sp-2xs);
 }
