@@ -1,4 +1,10 @@
 page {
+  --sp-3xs: 4rpx;
+  --sp-2xs: 8rpx;
+  --sp-xs: 12rpx;
+  --sp-sm: 16rpx;
+  --sp-md: 24rpx;
+  --sp-lg: 32rpx;
   background: #f7f3ec;
   color: #22333b;
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
@@ -7,16 +13,49 @@ page {
 }
 
 .container {
-  padding: 32rpx;
+  padding: var(--sp-lg);
   box-sizing: border-box;
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.page-head {
+  flex-shrink: 0;
+  padding: var(--sp-md) var(--sp-lg) var(--sp-sm);
+}
+
+.page-title {
+  font-size: 40rpx;
+  font-weight: 700;
+  letter-spacing: 2rpx;
+}
+
+.page-sub {
+  font-size: 26rpx;
+  color: #7a858c;
+  margin-top: var(--sp-2xs);
+}
+
+.page-body {
+  flex: 1;
+  min-height: 0;
+}
+
+.page-footer {
+  flex-shrink: 0;
+  padding: var(--sp-xs) var(--sp-lg) calc(var(--sp-xs) + env(safe-area-inset-bottom));
 }
 
 .card {
   background: #ffffff;
   border-radius: 24rpx;
-  padding: 32rpx;
+  padding: var(--sp-lg);
   box-shadow: 0 4rpx 24rpx rgba(34, 51, 59, 0.06);
-  margin-bottom: 28rpx;
+  margin-bottom: var(--sp-md);
 }
 
 .title {
@@ -28,14 +67,14 @@ page {
 .subtitle {
   font-size: 26rpx;
   color: #7a858c;
-  margin-top: 8rpx;
+  margin-top: var(--sp-2xs);
 }
 
 .section-title {
   font-size: 28rpx;
   font-weight: 600;
   color: #22333b;
-  margin-bottom: 20rpx;
+  margin-bottom: var(--sp-sm);
 }
 
 .muted {
@@ -67,7 +106,7 @@ page {
 .chips {
   display: flex;
   flex-wrap: wrap;
-  margin: -8rpx;
+  margin: calc(var(--sp-2xs) * -1);
 }
 
 .chip {
@@ -75,7 +114,7 @@ page {
   border-radius: 40rpx;
   background: #f0ebe2;
   color: #55636b;
-  margin: 8rpx;
+  margin: var(--sp-2xs);
   font-size: 26rpx;
 }
 
@@ -94,5 +133,37 @@ page {
 }
 
 .mt {
-  margin-top: 24rpx;
+  margin-top: var(--sp-md);
+}
+
+.lv0 {
+  background: #a8a29a;
+}
+
+.lv1 {
+  background: #7fa87f;
+}
+
+.lv2 {
+  background: #5f9b7f;
+}
+
+.lv3 {
+  background: #2f6b4f;
+}
+
+.lv4 {
+  background: #4a7fa5;
+}
+
+.lv5 {
+  background: #8a6fae;
+}
+
+.lv6 {
+  background: #c87d3d;
+}
+
+.lv7 {
+  background: #c8553d;
 }

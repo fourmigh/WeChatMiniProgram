@@ -4,7 +4,8 @@
     "pages/quiz/quiz",
     "pages/result/result",
     "pages/intro/intro",
-    "pages/history/history"
+    "pages/history/history",
+    "pages/chars/chars"
   ],
   "window": {
     "backgroundColor": "#F7F3EC",

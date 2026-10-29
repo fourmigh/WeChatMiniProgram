@@ -1,0 +1,143 @@
+.stat-num {
+  font-size: 56rpx;
+  font-weight: 700;
+  color: #22333b;
+  line-height: 1.2;
+}
+
+.dist-row {
+  display: flex;
+  align-items: center;
+  margin-top: 16rpx;
+}
+
+.dist-label {
+  width: 64rpx;
+  font-size: 24rpx;
+  color: #55636b;
+}
+
+.dist-track {
+  flex: 1;
+  height: 20rpx;
+  background: #f0ebe2;
+  border-radius: 10rpx;
+  overflow: hidden;
+}
+
+.dist-fill {
+  height: 100%;
+  border-radius: 10rpx;
+  min-width: 6rpx;
+}
+
+.dist-count {
+  width: 64rpx;
+  text-align: right;
+  font-size: 24rpx;
+  color: #7a858c;
+}
+
+.cell-grid {
+  display: flex;
+  flex-wrap: wrap;
+  margin: -6rpx;
+}
+
+.char-mini {
+  position: relative;
+  width: 88rpx;
+  height: 88rpx;
+  margin: 6rpx;
+  border: 2rpx solid #e3dbcf;
+  border-radius: 12rpx;
+  background: #fbf9f4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.mini-char {
+  font-family: "Kaiti SC", "STKaiti", "KaiTi", serif;
+  font-size: 44rpx;
+  line-height: 1;
+  color: #22333b;
+}
+
+.mini-level {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  min-width: 28rpx;
+  padding: 0 4rpx;
+  text-align: center;
+  font-size: 18rpx;
+  line-height: 1.5;
+  color: #ffffff;
+  border-radius: 8rpx 0 0 0;
+}
+
+.chars-tip {
+  text-align: center;
+  padding: 8rpx 0 32rpx;
+}
+
+.card-actions {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.action-link {
+  font-size: 26rpx;
+  color: #c8553d;
+  padding: 8rpx 12rpx;
+  flex-shrink: 0;
+}
+
+.action-link.active {
+  color: #22333b;
+  font-weight: 600;
+}
+
+.action-link.warn {
+  color: #a29a8e;
+}
+
+.action-link:last-child {
+  padding-right: 0;
+}
+
+.char-mini.manage {
+  border-style: dashed;
+  border-color: #c8553d;
+  opacity: 0.85;
+}
+
+.mini-del {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 32rpx;
+  height: 32rpx;
+  line-height: 30rpx;
+  text-align: center;
+  background: #c8553d;
+  color: #ffffff;
+  font-size: 24rpx;
+  border-radius: 0 10rpx 0 0;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 160rpx 0;
+}
+
+.empty-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  margin-bottom: 12rpx;
+}

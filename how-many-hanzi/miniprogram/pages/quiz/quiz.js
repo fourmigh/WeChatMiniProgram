@@ -2,6 +2,7 @@ const chars = require("../../lib/chars");
 const engine = require("../../lib/engine");
 const quiz = require("../../lib/quiz");
 const storage = require("../../lib/storage");
+const nav = require("../../lib/nav");
 
 const LEVELS = [
   { n: 1, label: "形" },
@@ -27,7 +28,7 @@ Page({
     mode: "test",
     levels: LEVELS,
     char: "",
-    charSize: "large",
+    layout: "grid",
     level: 0,
     total: 0,
     index: 0,
@@ -42,9 +43,14 @@ Page({
     feedbackSub: "",
     answerText: "",
     nextText: "继续",
+    scrollTop: 0,
   },
 
-  onLoad(options) {
+    onReady() {
+    nav.ready();
+  },
+
+onLoad(options) {
     this.mode = options.mode === "single" ? "single" : "test";
     this.scope = Number(options.scope || 4);
     this.pool = chars.getCharsByScope(this.scope);
@@ -96,7 +102,7 @@ Page({
     this.setData({
       question: q,
       char: q.char,
-      charSize: q.charSize || "large",
+      layout: q.level === 4 ? "list" : "grid",
       level: this.test.level,
       optionViews: decorate(q.options, []),
       selected: [],
@@ -107,6 +113,7 @@ Page({
       feedbackSub: "",
       answerText: "",
       nextText: "继续",
+      scrollTop: 0,
     });
   },
 
@@ -161,7 +168,9 @@ Page({
       level: this.test.level,
       feedback: correct ? "回答正确" : "回答错误",
       feedbackSub: correct
-        ? "达到 L" + q.level + " " + q.levelName
+        ? this.test.queue && this.test.queue.length
+          ? "回答正确，继续"
+          : "达到 L" + q.level + " " + q.levelName
         : "停在 L" + this.test.level + " " + quiz.LEVEL_NAMES[this.test.level],
       answerText: q.answer.join(" / "),
       nextText: nextText,
@@ -178,7 +187,12 @@ Page({
   },
 
   finishChar() {
-    storage.saveCharLevel(this.test.char, this.test.level);
+    storage.addCharRecord({
+      char: this.test.char,
+      level: this.test.level,
+      levelName: quiz.LEVEL_NAMES[this.test.level],
+      dateText: this.formatDate(new Date()),
+    });
     if (this.mode === "single") {
       const result = {
         mode: "single",

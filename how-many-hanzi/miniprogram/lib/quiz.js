@@ -30,13 +30,53 @@ function buildQuestion(ch, level, pool) {
   }
 }
 
+function buildQuestionGroup(ch, level, pool) {
+  if (level !== 4) {
+    const q = buildQuestion(ch, level, pool);
+    return q ? [q] : null;
+  }
+  const senses = chars.getSenses(ch);
+  if (senses && senses.length >= 2) {
+    const group = [];
+    for (const s of shuffle(senses)) {
+      const q = buildSenseQuestion(ch, s, senses, pool);
+      if (q) group.push(q);
+    }
+    if (group.length >= 2) return group;
+  }
+  const q = buildLevel4(ch, pool);
+  return q ? [q] : null;
+}
+
+function buildSenseQuestion(ch, sense, senses, pool) {
+  const others = [];
+  const seen = {};
+  for (const s of senses) {
+    if (s.p === sense.p) continue;
+    if (s.m === sense.m || seen[s.m]) continue;
+    seen[s.m] = true;
+    others.push(s.m);
+  }
+  let distractors = shuffle(others).slice(0, 3);
+  if (distractors.length < 3) {
+    const extra = D.pickExplanations(sense.m, 3 - distractors.length, pool).filter(
+      (x) => x !== sense.m && distractors.indexOf(x) === -1
+    );
+    distractors = distractors.concat(extra);
+  }
+  if (distractors.length < 3) return null;
+  const q = base(ch, 4, '它读「' + sense.p + '」时的主要意思是？');
+  q.options = buildOptions(sense.m, distractors);
+  q.answer = [sense.m];
+  return q;
+}
+
 function base(ch, level, question) {
   return {
     char: ch,
     level: level,
     levelName: LEVEL_NAMES[level],
     type: "single",
-    charSize: "large",
     options: [],
     answer: [],
     question: question,
@@ -47,13 +87,13 @@ function buildLevel1(ch, pool) {
   const distractors = D.pickFormSimilar(ch, 3, pool);
   if (distractors.length < 3) return null;
   const q = base(ch, 1, "下面哪个字与它完全相同？");
-  q.charSize = "huge";
   q.options = buildOptions(ch, distractors);
   q.answer = [ch];
   return q;
 }
 
 function buildLevel2(ch, pool) {
+  if (chars.isPolyphone(ch)) return null;
   const correct = hanzi.getPrimaryReading(ch);
   if (!correct) return null;
   const distractors = D.pickPinyins(correct, 3, pool);
@@ -148,5 +188,6 @@ function isCorrect(question, selected) {
 module.exports = {
   LEVEL_NAMES,
   buildQuestion,
+  buildQuestionGroup,
   isCorrect,
 };

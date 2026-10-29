@@ -1,3 +1,5 @@
+// 本文件由 scripts/build-chars.js 使用汉典数据（scripts/data/zdic.json）生成字库。
+// 数据来源：释义 / 分读音义 / 读音 = 汉典（ZDIC.NET）；部首 / 笔画 = cnchar。
 const fs = require("fs");
 const path = require("path");
 
@@ -30,13 +32,10 @@ const senior5500 = readCharlist("GF2002-hanzi-application.txt");
 
 const junior3500 = new Set([...primary2500, ...juniorAdd1000]);
 const seniorSet = new Set(senior5500);
-const allSet = new Set(all8105);
 const basicSet = new Set(basic300);
 const primarySet = new Set(primary2500);
 
 const tiers = [[], [], [], [], []];
-const tierOf = {};
-
 for (const ch of all8105) {
   let tier;
   if (basicSet.has(ch)) tier = 0;
@@ -45,38 +44,84 @@ for (const ch of all8105) {
   else if (seniorSet.has(ch)) tier = 3;
   else tier = 4;
   tiers[tier].push(ch);
-  tierOf[ch] = tier;
 }
 
 const allChars = tiers.reduce((arr, t) => arr.concat(t), []);
-const explainMap = buildExplain();
+const zdic = JSON.parse(fs.readFileSync(path.join(DATA_DIR, "zdic.json"), "utf8"));
 
 const explainLines = [];
+const readingLines = [];
+const senseLines = [];
+const extraStrokeLines = [];
+const extraWordLines = [];
+const polyArr = [];
+
 for (const ch of allChars) {
-  const text = explainMap[ch];
-  if (text) explainLines.push(ch + "|" + text);
+  const v = zdic[ch];
+  if (!v) continue;
+  if (v.explain) explainLines.push(ch + "|" + v.explain);
+  const readings = (v.readings || []).filter(Boolean);
+  if (readings.length) readingLines.push(ch + "|" + readings.join(","));
+  if (readings.length >= 2) {
+    polyArr.push(ch);
+    const senses = (v.senses || []).filter((s) => s.p && s.m);
+    if (senses.length >= 2) {
+      const seg = senses
+        .map((s) => s.p + ":" + s.m)
+        .join(";")
+        .slice(0, 400);
+      if (seg) senseLines.push(ch + "|" + seg);
+    }
+  }
+  const extra = v;
+  if (extra) {
+    if (extra.strokeNames && extra.strokeNames.length) {
+      extraStrokeLines.push(ch + "|" + extra.strokeNames.join(","));
+    }
+    if (extra.words && extra.words.length) {
+      extraWordLines.push(ch + "|" + extra.words.join(","));
+    }
+  }
 }
-const explainStr = explainLines.join("\n");
 
 const { radicalStr, strokeStr } = buildShapeData();
 
 const content = `// 本文件由 scripts/build-chars.js 自动生成，请勿手动修改
+// 数据来源：释义/读音/分读音义 = 汉典 ZDIC.NET；部首/笔画 = cnchar
 module.exports = {
   tierNames: ["启蒙", "小学", "初中", "高中", "全部"],
   tierChars: ${JSON.stringify(tiers)},
-  explains: ${JSON.stringify(explainStr)},
+  explains: ${JSON.stringify(explainLines.join("\n"))},
   radicals: ${JSON.stringify(radicalStr)},
-  strokes: ${JSON.stringify(strokeStr)}
+  strokes: ${JSON.stringify(strokeStr)},
+  readings: ${JSON.stringify(readingLines.join("\n"))},
+  polyphones: ${JSON.stringify(polyArr.join(""))},
+  senses: ${JSON.stringify(senseLines.join("\n"))},
+  extraStrokes: ${JSON.stringify(extraStrokeLines.join("\n"))},
+  extraWords: ${JSON.stringify(extraWordLines.join("\n"))}
 };
 `;
 
 if (!fs.existsSync(OUT_DIR)) fs.mkdirSync(OUT_DIR, { recursive: true });
 fs.writeFileSync(path.join(OUT_DIR, "chars.data.js"), content, "utf8");
 
-const explained = explainLines.filter(Boolean).length;
+const explained = explainLines.length;
+const withReadings = readingLines.length;
+const senseCount = senseLines.length;
 console.log("tiers:", tiers.map((t) => t.length));
 console.log("total chars:", allChars.length);
-console.log("explained:", explained, `(${((explained / allChars.length) * 100).toFixed(1)}%)`);
+console.log(
+  "explained:",
+  explained,
+  `(${((explained / allChars.length) * 100).toFixed(1)}%)`
+);
+console.log("with readings:", withReadings);
+console.log("polyphones:", polyArr.length);
+console.log(
+  "senses:",
+  senseCount,
+  `(${((senseCount / Math.max(polyArr.length, 1)) * 100).toFixed(1)}% of poly)`
+);
 console.log("output bytes:", Buffer.byteLength(content, "utf8"));
 
 function buildShapeData() {
@@ -99,79 +144,11 @@ function buildShapeData() {
     } catch (e) {
       count = 0;
     }
+    const info = zdic[ch];
+    if (!radical && info && info.radical) radical = info.radical;
+    if (!count && info && info.strokes) count = info.strokes;
     if (radical) radLines.push(ch + "|" + radical);
     if (count) strokeLines.push(ch + "|" + count);
   }
   return { radicalStr: radLines.join("\n"), strokeStr: strokeLines.join("\n") };
-}
-
-function buildExplain() {
-  const raw = JSON.parse(fs.readFileSync(path.join(DATA_DIR, "word.json"), "utf8"));
-  const map = {};
-  for (const item of raw) {
-    const ch = item.word;
-    if (!ch || Array.from(ch).length !== 1) continue;
-    const text = shorten(item.explanation || item.more || "");
-    if (text && !map[ch]) map[ch] = text;
-  }
-  return map;
-}
-
-function shorten(text) {
-  if (!text) return "";
-  const s = String(text)
-    .replace(/\r/g, "")
-    .replace(/[ \t]+/g, " ")
-    .trim();
-
-  const benyi = s.match(/本义[：:]?\s*([^）)\n]+)/);
-  if (benyi) {
-    const v = trimSentence(benyi[1]);
-    if (v.length >= 1 && !badMixed(v)) return clamp(v, 26);
-  }
-
-  const yi = s.match(/⒈\s*([^\n]+)/);
-  if (yi) {
-    const v = trimSentence(yi[1]);
-    if (v.length >= 2 && !badMixed(v)) return clamp(v, 26);
-  }
-
-  const lines = s
-    .split("\n")
-    .map((l) => l.trim())
-    .filter((l) => l && !l.startsWith("--") && !l.startsWith("〈"));
-  for (const line of lines) {
-    const cleaned = cleanLine(line);
-    if (cleaned.length >= 2 && !/^同本义/.test(cleaned) && !badMixed(cleaned)) {
-      return clamp(cleaned, 26);
-    }
-  }
-  return "";
-}
-
-function badMixed(v) {
-  return /[\u4e00-\u9fa5][a-zA-Z]|[a-zA-Z][\u4e00-\u9fa5]/.test(v);
-}
-
-function trimSentence(v) {
-  return String(v)
-    .split(/[。；;]/)[0]
-    .replace(/〈[^〉]*〉/g, "")
-    .replace(/[“”"]/g, "")
-    .trim();
-}
-
-function clamp(v, max) {
-  return v.length > max ? v.slice(0, max) : v;
-}
-
-function cleanLine(line) {
-  return line
-    .replace(/^[0-9０-９]+[.、．]/, "")
-    .replace(/〈[^〉]*〉/g, "")
-    .replace(/[（(][^）)]*[）)]/g, "")
-    .replace(/[⒈⒉⒊⒋⒌⒍⒎⒏⒐⒑]/g, "")
-    .replace(/[【】\[\]]/g, "")
-    .replace(/[，,、;；]+$/g, "")
-    .trim();
 }

@@ -1,12 +1,15 @@
-.quiz {
-  padding-bottom: 60rpx;
+.quiz-head {
+  flex-shrink: 0;
+  padding: 0 var(--sp-lg);
 }
 
 .top-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8rpx 4rpx 20rpx;
+  height: 56rpx;
+  padding: 8rpx 0 16rpx;
+  box-sizing: content-box;
 }
 
 .progress-text {
@@ -26,7 +29,7 @@
 .level-track {
   display: flex;
   justify-content: space-between;
-  padding: 16rpx 8rpx 32rpx;
+  padding: 12rpx 8rpx 20rpx;
 }
 
 .level-seg {
@@ -41,7 +44,7 @@
   height: 16rpx;
   border-radius: 50%;
   background: #ddd5c8;
-  margin-bottom: 10rpx;
+  margin-bottom: 8rpx;
 }
 
 .level-seg.on .dot {
@@ -71,40 +74,53 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 24rpx 0 12rpx;
+  justify-content: center;
+  height: 250rpx;
+  padding: 0;
 }
 
 .char {
-  font-family: "Kaiti SC", "STKaiti", serif;
-  color: #22333b;
+  font-family: "Kaiti SC", "STKaiti", "KaiTi", serif;
+  font-size: 150rpx;
   line-height: 1.1;
-}
-
-.char.large {
-  font-size: 180rpx;
-}
-
-.char.huge {
-  font-size: 240rpx;
+  color: #22333b;
 }
 
 .level-tag {
-  margin-top: 16rpx;
+  margin-top: 10rpx;
   font-size: 24rpx;
   color: #a29a8e;
   letter-spacing: 1rpx;
+}
+
+.quiz-content {
+  padding: 0 var(--sp-lg) var(--sp-md);
 }
 
 .prompt {
   text-align: center;
   font-size: 30rpx;
   color: #55636b;
-  margin: 20rpx 0 36rpx;
+  margin: 12rpx 0 28rpx;
+}
+
+.submit-btn {
+  margin-top: var(--sp-md);
+}
+
+.quiz-pad {
+  height: var(--sp-md);
 }
 
 .options {
   display: flex;
   flex-direction: column;
+}
+
+.options.grid {
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
 }
 
 .option {
@@ -118,18 +134,39 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
+}
+
+.options.grid .option {
+  width: calc(50% - 12rpx);
+  height: 168rpx;
+  padding: 8rpx 12rpx;
 }
 
 .option-text {
-  font-size: 36rpx;
+  font-size: 32rpx;
   color: #22333b;
   text-align: center;
   word-break: break-all;
+  line-height: 1.4;
 }
 
-.option-text.small {
-  font-size: 28rpx;
-  line-height: 1.5;
+.opt-l1 .option-text {
+  font-family: "Kaiti SC", "STKaiti", "KaiTi", serif;
+  font-size: 64rpx;
+}
+
+.opt-l2 .option-text {
+  font-size: 36rpx;
+}
+
+.opt-l3 .option-text {
+  font-size: 32rpx;
+}
+
+.opt-l7 .option-text {
+  font-family: "Kaiti SC", "STKaiti", "KaiTi", serif;
+  font-size: 48rpx;
 }
 
 .option.selected {
@@ -158,49 +195,72 @@
 
 .check {
   position: absolute;
-  right: 24rpx;
-  top: 50%;
-  transform: translateY(-50%);
+  right: 16rpx;
+  top: 12rpx;
   color: #22333b;
-  font-size: 28rpx;
+  font-size: 24rpx;
+  line-height: 1;
 }
 
-.feedback {
-  margin-top: 28rpx;
-  border-radius: 20rpx;
-  padding: 24rpx 28rpx;
+.feedback-panel {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+  background: #ffffff;
+  border-radius: 32rpx 32rpx 0 0;
+  padding: 28rpx 32rpx calc(28rpx + env(safe-area-inset-bottom));
+  box-shadow: 0 -8rpx 40rpx rgba(34, 51, 59, 0.12);
+  animation: slide-up 0.22s ease-out;
 }
 
-.feedback.ok {
-  background: #eaf3ee;
+@keyframes slide-up {
+  from {
+    transform: translateY(48rpx);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
-.feedback.bad {
-  background: #fbeeea;
+.panel-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
 }
 
 .feedback-title {
-  font-size: 30rpx;
+  font-size: 32rpx;
   font-weight: 700;
 }
 
-.feedback.ok .feedback-title {
+.feedback-panel.ok .feedback-title {
   color: #2f6b4f;
 }
 
-.feedback.bad .feedback-title {
+.feedback-panel.bad .feedback-title {
   color: #c8553d;
 }
 
 .feedback-sub {
   font-size: 26rpx;
   color: #55636b;
-  margin-top: 6rpx;
 }
 
 .feedback-answer {
-  font-size: 24rpx;
+  font-size: 26rpx;
   color: #7a858c;
-  margin-top: 10rpx;
+  margin-top: 14rpx;
   word-break: break-all;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.panel-btn {
+  margin-top: 24rpx;
 }

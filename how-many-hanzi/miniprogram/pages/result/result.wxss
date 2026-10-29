@@ -10,7 +10,7 @@
 }
 
 .big-char {
-  font-family: "Kaiti SC", "STKaiti", serif;
+  font-family: "Kaiti SC", "STKaiti", "KaiTi", serif;
   font-size: 220rpx;
   line-height: 1.1;
   color: #22333b;

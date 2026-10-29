@@ -1,5 +1,8 @@
 node_modules/
-scripts/data/word.json
+scripts/data/zdic/
+scripts/data/zdic-failures.txt
 scripts/*-out.txt
 scripts/explain-samples.txt
 scripts/explain-raw.txt
+scripts/font-tmp/
+fonts/

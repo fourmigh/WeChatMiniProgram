@@ -1,7 +1,9 @@
 const KEY_SETTINGS = "hmh:settings";
 const KEY_HISTORY = "hmh:history";
 const KEY_CHAR_LEVELS = "hmh:charLevels";
+const KEY_RECENT_CHARS = "hmh:recentChars";
 const MAX_HISTORY = 50;
+const MAX_RECENT_CHARS = 50;
 
 const DEFAULT_SETTINGS = {
   scope: 4,
@@ -73,9 +75,46 @@ function saveCharLevel(ch, level) {
   }
 }
 
+function getRecentChars() {
+  const list = read(KEY_RECENT_CHARS, []);
+  return Array.isArray(list) ? list : [];
+}
+
+function addCharRecord(record) {
+  const list = getRecentChars();
+  list.unshift(
+    Object.assign(
+      {
+        createdAt: Date.now(),
+        id: Date.now() + "-" + Math.random().toString(36).slice(2, 6),
+      },
+      record
+    )
+  );
+  write(KEY_RECENT_CHARS, list.slice(0, MAX_RECENT_CHARS));
+  saveCharLevel(record.char, record.level);
+}
+
 function clearAll() {
   write(KEY_HISTORY, []);
+  write(KEY_RECENT_CHARS, []);
   write(KEY_CHAR_LEVELS, {});
+}
+
+function removeChar(ch) {
+  const m = getCharLevels();
+  if (ch in m) {
+    delete m[ch];
+    write(KEY_CHAR_LEVELS, m);
+  }
+  write(KEY_RECENT_CHARS, getRecentChars().filter((r) => r.char !== ch));
+}
+
+function removeHistoryAt(index) {
+  const list = getHistory();
+  if (index < 0 || index >= list.length) return;
+  list.splice(index, 1);
+  write(KEY_HISTORY, list);
 }
 
 module.exports = {
@@ -87,5 +126,9 @@ module.exports = {
   clearHistory,
   getCharLevels,
   saveCharLevel,
+  getRecentChars,
+  addCharRecord,
   clearAll,
+  removeChar,
+  removeHistoryAt,
 };

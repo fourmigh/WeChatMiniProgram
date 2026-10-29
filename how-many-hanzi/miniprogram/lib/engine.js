@@ -11,14 +11,21 @@ function createCharTest(ch) {
     next: 1,
     log: [],
     done: false,
+    queue: [],
   };
 }
 
 function questionFor(test, pool) {
+  if (test.queue && test.queue.length) {
+    return test.queue.shift();
+  }
   let lv = test.next;
   while (lv <= MAX_LEVEL) {
-    const q = quiz.buildQuestion(test.char, lv, pool);
-    if (q) return q;
+    const group = quiz.buildQuestionGroup(test.char, lv, pool);
+    if (group && group.length) {
+      test.queue = group.slice(1);
+      return group[0];
+    }
     lv++;
   }
   return null;
@@ -27,10 +34,15 @@ function questionFor(test, pool) {
 function applyAnswer(test, question, correct) {
   test.log.push({ level: question.level, correct: correct });
   if (correct) {
-    test.level = question.level;
-    test.next = question.level + 1;
-    if (test.level >= MAX_LEVEL) test.done = true;
+    if (test.queue && test.queue.length) {
+      // 组内还有子题，级别保持，继续下一子题
+    } else {
+      test.level = question.level;
+      test.next = question.level + 1;
+      if (test.level >= MAX_LEVEL) test.done = true;
+    }
   } else {
+    test.queue = [];
     test.done = true;
   }
   return test;

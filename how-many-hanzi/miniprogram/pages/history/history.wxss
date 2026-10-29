@@ -1,3 +1,45 @@
+.recent-more {
+  font-size: 26rpx;
+  color: #c8553d;
+  padding: 4rpx 8rpx;
+}
+
+.recent-strip {
+  white-space: nowrap;
+  margin-top: 8rpx;
+}
+
+.recent-cell {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  width: 96rpx;
+  height: 110rpx;
+  border: 2rpx solid #e3dbcf;
+  border-radius: 12rpx;
+  margin-right: 14rpx;
+  overflow: hidden;
+  background: #fbf9f4;
+}
+
+.recent-char {
+  font-family: "Kaiti SC", "STKaiti", "KaiTi", serif;
+  font-size: 52rpx;
+  line-height: 1.1;
+  color: #22333b;
+  margin-top: 12rpx;
+}
+
+.recent-level {
+  margin-top: auto;
+  width: 100%;
+  text-align: center;
+  font-size: 20rpx;
+  line-height: 1.6;
+  color: #ffffff;
+  font-weight: 600;
+}
+
 .record-level {
   font-size: 44rpx;
   font-weight: 700;
@@ -5,8 +47,30 @@
   line-height: 1.2;
 }
 
+.record {
+  position: relative;
+}
+
+.record-del {
+  position: absolute;
+  right: 6rpx;
+  top: 6rpx;
+  width: 44rpx;
+  height: 44rpx;
+  line-height: 40rpx;
+  text-align: center;
+  color: #b0a89c;
+  font-size: 34rpx;
+  border-radius: 50%;
+}
+
+.record-del:active {
+  color: #c8553d;
+}
+
 .record-right {
   text-align: right;
+  padding-right: 44rpx;
 }
 
 .record-mastery {

@@ -5,7 +5,6 @@
   "dependencies": {
     "cnchar": "^3.2.6",
     "cnchar-order": "^3.2.6",
-    "cnchar-poly": "^3.2.6",
     "cnchar-radical": "^3.2.6",
     "cnchar-words": "^3.2.6"
   },

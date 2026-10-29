@@ -1,5 +1,6 @@
 const chars = require("../../lib/chars");
 const storage = require("../../lib/storage");
+const nav = require("../../lib/nav");
 const { pickOne } = require("../../lib/utils");
 
 Page({
@@ -11,9 +12,14 @@ Page({
     charInput: "",
     lastResult: null,
     totalChars: 0,
+    polyOnly: false,
   },
 
-  onLoad() {
+    onReady() {
+    nav.ready();
+  },
+
+onLoad() {
     const settings = storage.getSettings();
     const scopes = chars.listScopes();
     this.setData({
@@ -50,10 +56,22 @@ Page({
     this.setData({ charInput: e.detail.value });
   },
 
+  onTogglePolyOnly() {
+    this.setData({ polyOnly: !this.data.polyOnly });
+  },
+
   randomChar() {
     const pool = chars.getCharsByScope(this.data.scopeIndex);
-    const ch = pickOne(pool);
-    this.setData({ charInput: ch });
+    if (this.data.polyOnly) {
+      const poly = chars.getPolyChars(pool);
+      if (!poly.length) {
+        wx.showToast({ title: "该档位没有多音字", icon: "none" });
+        return;
+      }
+      this.setData({ charInput: pickOne(poly) });
+      return;
+    }
+    this.setData({ charInput: pickOne(pool) });
   },
 
   startSingle() {
@@ -66,30 +84,34 @@ Page({
       wx.showToast({ title: "请输入一个汉字", icon: "none" });
       return;
     }
-    wx.navigateTo({
-      url:
-        "/pages/quiz/quiz?mode=single&char=" +
+    nav.go(
+      "/pages/quiz/quiz?mode=single&char=" +
         encodeURIComponent(ch) +
         "&scope=" +
         this.data.scopeIndex,
-    });
+      "正在准备题目"
+    );
   },
 
   startTest() {
-    wx.navigateTo({
-      url:
-        "/pages/quiz/quiz?mode=test&scope=" +
+    nav.go(
+      "/pages/quiz/quiz?mode=test&scope=" +
         this.data.scopeIndex +
         "&size=" +
         this.data.sampleSize,
-    });
+      "正在抽题"
+    );
   },
 
   goIntro() {
-    wx.navigateTo({ url: "/pages/intro/intro" });
+    nav.go("/pages/intro/intro");
   },
 
   goHistory() {
-    wx.navigateTo({ url: "/pages/history/history" });
+    nav.go("/pages/history/history");
+  },
+
+  goChars() {
+    nav.go("/pages/chars/chars");
   },
 });

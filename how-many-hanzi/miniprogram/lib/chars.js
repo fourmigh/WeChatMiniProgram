@@ -22,6 +22,37 @@ const strokeMap = parseMap(data.strokes);
 
 const allChars = tierChars.reduce((arr, t) => arr.concat(t), []);
 
+const polyChars = data.polyphones ? Array.from(data.polyphones) : [];
+const polySet = {};
+for (const c of polyChars) polySet[c] = true;
+
+const readingMap = {};
+const readingLines = data.readings ? data.readings.split("\n") : [];
+for (const line of readingLines) {
+  const i = line.indexOf("|");
+  if (i <= 0) continue;
+  const ch = line.slice(0, i);
+  const list = line.slice(i + 1).split(",").filter(Boolean);
+  if (list.length) readingMap[ch] = list;
+}
+
+const senseMap = {};
+const senseLines = data.senses ? data.senses.split("\n") : [];
+for (const line of senseLines) {
+  const i = line.indexOf("|");
+  if (i <= 0) continue;
+  const ch = line.slice(0, i);
+  const entries = [];
+  for (const seg of line.slice(i + 1).split(";")) {
+    const c = seg.indexOf(":");
+    if (c <= 0) continue;
+    const p = seg.slice(0, c);
+    const m = seg.slice(c + 1);
+    if (p && m) entries.push({ p: p, m: m });
+  }
+  if (entries.length >= 2) senseMap[ch] = entries;
+}
+
 function listScopes() {
   return tierNames.map((name, index) => ({
     index,
@@ -50,6 +81,51 @@ function getStrokeCount(ch) {
   return Number(strokeMap[ch]) || 0;
 }
 
+function isPolyphone(ch) {
+  return !!polySet[ch];
+}
+
+function getPolyChars(pool) {
+  return pool.filter((c) => polySet[c]);
+}
+
+function getSenses(ch) {
+  return senseMap[ch] || null;
+}
+
+function getReadings(ch) {
+  return readingMap[ch] || [];
+}
+
+function getPrimaryReading(ch) {
+  const list = readingMap[ch];
+  return list && list.length ? list[0] : "";
+}
+
+const extraStrokeMap = {};
+for (const line of (data.extraStrokes || "").split("\n")) {
+  const i = line.indexOf("|");
+  if (i <= 0) continue;
+  const list = line.slice(i + 1).split(",").filter(Boolean);
+  if (list.length) extraStrokeMap[line.slice(0, i)] = list;
+}
+
+const extraWordMap = {};
+for (const line of (data.extraWords || "").split("\n")) {
+  const i = line.indexOf("|");
+  if (i <= 0) continue;
+  const list = line.slice(i + 1).split(",").filter(Boolean);
+  if (list.length) extraWordMap[line.slice(0, i)] = list;
+}
+
+function getExtraStrokeNames(ch) {
+  return extraStrokeMap[ch] || null;
+}
+
+function getExtraWords(ch) {
+  return extraWordMap[ch] || null;
+}
+
 module.exports = {
   tierNames,
   tierChars,
@@ -57,9 +133,17 @@ module.exports = {
   explainMap,
   radicalMap,
   strokeMap,
+  polyChars,
   listScopes,
   getCharsByScope,
   getExplain,
   getRadical,
   getStrokeCount,
+  isPolyphone,
+  getPolyChars,
+  getSenses,
+  getReadings,
+  getPrimaryReading,
+  getExtraStrokeNames,
+  getExtraWords,
 };

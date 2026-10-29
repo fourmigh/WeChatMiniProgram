@@ -1,60 +1,20 @@
+const chars = require("./chars");
 const cnchar = require("./vendor/cnchar/cnchar.min.js");
-cnchar.use(require("./vendor/cnchar/poly.min.js"));
 cnchar.use(require("./vendor/cnchar/order.min.js"));
 cnchar.use(require("./vendor/cnchar/radical.min.js"));
 cnchar.use(require("./vendor/cnchar/words.min.js"));
 
-const PINYIN_RE = /^[a-züêāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜńňǹḿ]+$/i;
-
-function isPinyin(s) {
-  return !!s && PINYIN_RE.test(s);
-}
-
-function lowerFirst(s) {
-  if (!s) return "";
-  return s.charAt(0).toLowerCase() + s.slice(1);
-}
-
-function parsePoly(raw) {
-  if (!raw) return [];
-  let s = String(raw).trim();
-  if (s.charAt(0) === "(") s = s.slice(1);
-  if (s.charAt(s.length - 1) === ")") s = s.slice(0, -1);
-  const parts = s.split("|");
-  const result = [];
-  const seen = {};
-  for (let i = 0; i < parts.length; i++) {
-    const v = lowerFirst(parts[i].trim());
-    if (v && !seen[v]) {
-      seen[v] = true;
-      result.push(v);
-    }
-  }
-  return result;
-}
-
 function getReadings(ch) {
-  try {
-    const arr = cnchar.spell(ch, "array", "poly", "tone");
-    if (!arr || !arr.length) return [];
-    return parsePoly(arr[0]).filter(isPinyin);
-  } catch (e) {
-    return [];
-  }
+  return chars.getReadings(ch);
 }
 
 function getPrimaryReading(ch) {
-  try {
-    const arr = cnchar.spell(ch, "array", "tone");
-    if (!arr || !arr.length) return "";
-    const v = lowerFirst(String(arr[0]).trim());
-    return isPinyin(v) ? v : "";
-  } catch (e) {
-    return "";
-  }
+  return chars.getPrimaryReading(ch);
 }
 
 function getStrokeNames(ch) {
+  const extra = chars.getExtraStrokeNames(ch);
+  if (extra && extra.length) return extra.slice();
   try {
     const arr = cnchar.stroke(ch, "order", "name");
     if (!arr || !arr.length) return [];
@@ -66,6 +26,8 @@ function getStrokeNames(ch) {
 }
 
 function getWords(ch) {
+  const extra = chars.getExtraWords(ch);
+  if (extra && extra.length) return extra.slice();
   try {
     const arr = cnchar.words(ch);
     return Array.isArray(arr) ? arr.slice() : [];
@@ -116,7 +78,6 @@ const STROKE_NAMES = [
 ];
 
 module.exports = {
-  isPinyin,
   getReadings,
   getPrimaryReading,
   getStrokeNames,

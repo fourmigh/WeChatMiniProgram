@@ -1,3 +1,5 @@
+const nav = require("../../lib/nav");
+
 const LEVEL_DESC = [
   "尚未认识",
   "能辨认字形，但读音、意义掌握有限",
@@ -21,7 +23,11 @@ Page({
     hasResult: false,
   },
 
-  onLoad(options) {
+    onReady() {
+    nav.ready();
+  },
+
+onLoad(options) {
     const app = getApp();
     const result = app.globalData.result;
     if (!result) {
@@ -33,11 +39,12 @@ Page({
       title: mode === "single" ? "测字结果" : "自测结果",
     });
 
-    const data = { result: result, mode: mode, hasResult: true };
+    const data = { result: result, mode: mode, hasResult: true, pageTitle: mode === "single" ? "测字结果" : "自测结果" };
 
     if (mode === "single") {
       data.desc = LEVEL_DESC[result.level] || "";
-      data.logRows = (result.log || []).map((row) => ({
+      data.logRows = (result.log || []).map((row, i) => ({
+        key: row.level + "-" + i,
         level: row.level,
         name: LEVEL_LABEL[row.level],
         text: row.correct ? "答对" : "答错",
@@ -68,10 +75,28 @@ Page({
   },
 
   again() {
-    wx.reLaunch({ url: "/pages/index/index" });
+    const r = this.data.result;
+    if (!r) return;
+    if (r.mode === "test") {
+      nav.go(
+        "/pages/quiz/quiz?mode=test&scope=" + r.scope + "&size=" + r.count,
+        "正在抽题"
+      );
+    } else {
+      nav.go(
+        "/pages/quiz/quiz?mode=single&char=" +
+          encodeURIComponent(r.char) +
+          "&scope=4",
+        "正在准备题目"
+      );
+    }
+  },
+
+  goHome() {
+    nav.relaunch("/pages/index/index");
   },
 
   goHistory() {
-    wx.navigateTo({ url: "/pages/history/history" });
+    nav.go("/pages/history/history");
   },
 });
