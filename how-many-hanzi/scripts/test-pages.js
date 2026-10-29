@@ -49,8 +49,9 @@ function loadPage(rel, options) {
   require(file);
   const page = Object.create(captured);
   page.data = JSON.parse(JSON.stringify(captured.data || {}));
-  page.setData = function (patch) {
+  page.setData = function (patch, cb) {
     Object.assign(this.data, patch);
+    if (typeof cb === "function") cb.call(this);
   };
   if (page.onLoad) page.onLoad(options || {});
   return page;
@@ -150,11 +151,11 @@ function runQuiz(options, label) {
   return app.globalData.result;
 }
 
-const singleResult = runQuiz({ mode: "single", char: encodeURIComponent("行"), scope: "4" }, "single");
+const singleResult = runQuiz({ mode: "single", char: encodeURIComponent("魑"), scope: "4" }, "single");
 check("single result mode", singleResult && singleResult.mode === "single");
 check("single level 6", singleResult && singleResult.level === 6, singleResult && singleResult.level);
 const recentAfterSingle = global.wx.getStorageSync("hmh:recentChars");
-check("single recent stored", recentAfterSingle.length === 1 && recentAfterSingle[0].char === "行" && recentAfterSingle[0].level === 6, JSON.stringify(recentAfterSingle[0] || {}));
+check("single recent stored", recentAfterSingle.length === 1 && recentAfterSingle[0].char === "魑" && recentAfterSingle[0].level === 6, JSON.stringify(recentAfterSingle[0] || {}));
 
 const singleResultPage = loadPage("result/result.js", { mode: "single" });
 const singleLogs = singleResultPage.data.logRows || [];
@@ -183,10 +184,12 @@ const intro = loadPage("intro/intro.js");
 check("intro levels", intro.data.levels.length === 7);
 check(
   "intro ranks",
-  intro.data.ranks.length === 7 &&
-    intro.data.ranks[0].name === "蒙童" &&
-    intro.data.ranks[6].name === "状元" &&
-    intro.data.ranks[6].range === "≥ 85%",
+  intro.data.ranks.length === 8 &&
+    intro.data.ranks[0].name === "白丁" &&
+    intro.data.ranks[0].range === "测字 < 18" &&
+    intro.data.ranks[1].name === "蒙童" &&
+    intro.data.ranks[7].name === "状元" &&
+    intro.data.ranks[7].range === "≥ 85%",
   JSON.stringify(intro.data.ranks.map((r) => r.name))
 );
 check(
@@ -198,6 +201,26 @@ check(
 );
 
 const levelsLib = require(path.join(__dirname, "..", "miniprogram", "lib", "levels.js"));
+const progressLib = require(path.join(__dirname, "..", "miniprogram", "lib", "progress.js"));
+function fakeLevels(n, lv) {
+  const m = {};
+  for (let i = 0; i < n; i++) m["字" + i] = lv;
+  return m;
+}
+check(
+  "progress zero is 白丁",
+  progressLib.calcProgress({}, 8105).rank === levelsLib.RANK_ZERO
+);
+check(
+  "progress 17 chars still 白丁",
+  progressLib.calcProgress(fakeLevels(17, 6), 8105).rank === "白丁",
+  JSON.stringify(progressLib.calcProgress(fakeLevels(17, 6), 8105))
+);
+check(
+  "progress 18 chars leaves 白丁",
+  progressLib.calcProgress(fakeLevels(18, 6), 8105).rank === "蒙童",
+  JSON.stringify(progressLib.calcProgress(fakeLevels(18, 6), 8105))
+);
 check(
   "levels helpers",
   levelsLib.markOf(0) === "庚" &&
@@ -208,6 +231,134 @@ check(
     levelsLib.avgText(4) === "丙等 4.0"
 );
 check("intro scopes", intro.data.scopes.length === 5);
+intro.viewportH = 400;
+intro.onScroll({ detail: { scrollTop: 100, scrollHeight: 1000 } });
+check(
+  "intro scrollbar calc",
+  intro.data.showBar === true &&
+    intro.data.barHeight === 40 &&
+    intro.data.barTop === 10,
+  JSON.stringify({ top: intro.data.barTop, h: intro.data.barHeight })
+);
+
+const introRank = loadPage("intro/intro.js", { anchor: "rank" });
+pageOnReady(introRank);
+check(
+  "intro rank anchor scroll",
+  introRank.data.intoView === "rank-card",
+  introRank.data.intoView
+);
+
+lastNav = null;
+index.goRankIntro();
+check("index go rank intro nav", lastNav === "/pages/intro/intro?anchor=rank", lastNav);
+
+// —— 字库浏览（列表页 / 详情页） ——
+lastNav = null;
+intro.openScope({ currentTarget: { dataset: { index: 2 } } });
+check("intro open scope nav", lastNav === "/pages/chars-list/chars-list?scope=2", lastNav);
+
+const listPage = loadPage("chars-list/chars-list.js", { scope: "1" });
+check(
+  "list default scope",
+  listPage.data.scope === 1 &&
+    listPage.data.pool.length === 2501 &&
+    listPage.data.scopeName === "小学",
+  JSON.stringify({ scope: listPage.data.scope, pool: listPage.data.pool.length })
+);
+check(
+  "list first batch",
+  listPage.data.chars.length === 200 && listPage.data.hasMore === true,
+  "chars=" + listPage.data.chars.length
+);
+
+listPage.onSearch({ detail: { value: "一" } });
+check(
+  "list search hit",
+  listPage.data.chars.length === 1 && listPage.data.chars[0].char === "一"
+);
+listPage.onSearch({ detail: { value: "魑" } });
+check(
+  "list search miss",
+  listPage.data.chars.length === 0 && listPage.data.emptyHint.length > 0,
+  listPage.data.emptyHint
+);
+listPage.onSearch({ detail: { value: "" } });
+check("list search reset", listPage.data.chars.length === 200);
+
+listPage.onScopeTap({ currentTarget: { dataset: { index: 4 } } });
+check(
+  "list scope switch",
+  listPage.data.scope === 4 &&
+    listPage.data.pool.length === 8105 &&
+    listPage.data.scopeName === "全部",
+  JSON.stringify({ scope: listPage.data.scope, pool: listPage.data.pool.length })
+);
+
+const targetIdx = listPage.data.pool.indexOf("魑");
+listPage.viewportH = 500;
+listPage.onScroll({ detail: { scrollTop: 250, scrollHeight: 1000 } });
+check(
+  "list scrollbar calc",
+  listPage.data.showBar === true &&
+    listPage.data.barHeight === 50 &&
+    listPage.data.barTop === 25,
+  JSON.stringify({ top: listPage.data.barTop, h: listPage.data.barHeight })
+);
+listPage.setPendingChar("魑");
+listPage.onShow();check(
+  "list return scroll",
+  listPage.data.intoView === "cell-" + targetIdx &&
+    listPage.data.chars.length > targetIdx,
+  "intoView=" + listPage.data.intoView + " chars=" + listPage.data.chars.length + " idx=" + targetIdx
+);
+check(
+  "list return highlight",
+  listPage.data.highlightIndex === targetIdx,
+  "hl=" + listPage.data.highlightIndex
+);
+
+const hangIdx = listPage.data.pool.indexOf("行");
+const detailPage = loadPage("char-detail/char-detail.js", {
+  char: encodeURIComponent("行"),
+  scope: "4",
+  i: String(hangIdx),
+});
+check(
+  "detail data complete",
+  detailPage.data.char === "行" &&
+    detailPage.data.readings.length >= 2 &&
+    detailPage.data.senses.length >= 2 &&
+    detailPage.data.strokeNames.length > 0 &&
+    detailPage.data.words.length > 0 &&
+    detailPage.data.radical === "行" &&
+    detailPage.data.strokes === 6,
+  JSON.stringify({
+    readings: detailPage.data.readings,
+    senses: detailPage.data.senses.length,
+    strokes: detailPage.data.strokeNames.length,
+    words: detailPage.data.words.length,
+  })
+);
+check(
+  "detail tier of char",
+  detailPage.data.tierName === "启蒙" &&
+    require(path.join(__dirname, "..", "miniprogram", "lib", "chars.js")).getTierOf("魑") === 3,
+  detailPage.data.tierName
+);
+
+detailPage.goNext();
+check("detail next char", detailPage.data.char !== "行", detailPage.data.char);
+detailPage.goPrev();
+check("detail prev char", detailPage.data.char === "行", detailPage.data.char);
+
+global.getCurrentPages = () => [listPage, detailPage];
+detailPage.onUnload();
+check(
+  "detail unload passes char",
+  listPage.pendingChar === "行" && detailPage.viewChar === "行",
+  "pending=" + listPage.pendingChar
+);
 
 const charsPage = loadPage("chars/chars.js");
 charsPage.onShow();
@@ -217,7 +368,7 @@ check(
   "chars progress",
   charsPage.data.mastery >= 0 &&
     charsPage.data.mastery <= 5 &&
-    charsPage.data.rank === "蒙童" &&
+    charsPage.data.rank === "白丁" &&
     charsPage.data.coverage > 0 &&
     charsPage.data.totalChars === 8105,
   JSON.stringify({
@@ -254,9 +405,17 @@ const history = loadPage("history/history.js");
 history.onShow();
 const indexAgain = loadPage("index/index.js");
 check(
-  "index last rank",
-  indexAgain.data.lastResult && typeof indexAgain.data.lastResult.rank === "string" && indexAgain.data.lastResult.rank.length > 0,
-  JSON.stringify(indexAgain.data.lastResult && indexAgain.data.lastResult.rank)
+  "index current rank",
+  typeof indexAgain.data.currentRank === "string" &&
+    indexAgain.data.currentRank.length > 0,
+  JSON.stringify({
+    rank: indexAgain.data.currentRank,
+    mastery: indexAgain.data.currentMastery,
+  })
+);
+check(
+  "index last result has no rank",
+  indexAgain.data.lastResult && indexAgain.data.lastResult.rank === undefined
 );
 check("history has record", history.data.hasData === true, "len=" + history.data.list.length);
 check(

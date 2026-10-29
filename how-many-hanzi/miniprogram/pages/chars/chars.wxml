@@ -48,7 +48,8 @@
     </view>
   </view>
 
-  <scroll-view scroll-y enhanced="{{true}}" show-scrollbar="{{false}}" class="page-body">
+  <view class="body-wrap">
+    <scroll-view scroll-y enhanced="{{true}}" show-scrollbar="{{false}}" class="page-body" bindscroll="onScroll">
     <view class="container">
       <block wx:if="{{hasData}}">
         <view class="card" wx:for="{{groups}}" wx:key="level" wx:for-item="g">
@@ -81,6 +82,10 @@
       </view>
     </view>
   </scroll-view>
+    <view class="scrollbar {{showBar ? 'show' : ''}}">
+      <view class="scrollbar-thumb" style="top: {{barTop}}%; height: {{barHeight}}%"></view>
+    </view>
+  </view>
 
   <view class="page-footer">
     <view class="btn ghost" bindtap="goHome">回首页</view>

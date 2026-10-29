@@ -25,12 +25,14 @@
     </view>
   </view>
 
-  <scroll-view
+  <view class="body-wrap">
+    <scroll-view
     scroll-y
     enhanced="{{true}}"
     show-scrollbar="{{false}}"
     class="page-body"
     scroll-top="{{scrollTop}}"
+    bindscroll="onScroll"
   >
     <view class="quiz-content">
       <view class="prompt" wx:if="{{question}}">{{question.question}}</view>
@@ -56,6 +58,10 @@
       <view class="quiz-pad"></view>
     </view>
   </scroll-view>
+    <view class="scrollbar {{showBar ? 'show' : ''}}">
+      <view class="scrollbar-thumb" style="top: {{barTop}}%; height: {{barHeight}}%"></view>
+    </view>
+  </view>
 
   <view wx:if="{{answered}}" class="feedback-panel {{isCorrect ? 'ok' : 'bad'}}">
     <view class="panel-head">

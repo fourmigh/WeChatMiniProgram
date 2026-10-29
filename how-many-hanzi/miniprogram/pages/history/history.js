@@ -1,5 +1,6 @@
 const storage = require("../../lib/storage");
 const nav = require("../../lib/nav");
+const scrollbar = require("../../lib/scrollbar");
 const levels = require("../../lib/levels");
 
 function pad2(n) {
@@ -36,6 +37,8 @@ Page({
 
   onReady() {
     nav.ready();
+    this.setData(scrollbar.createState());
+    scrollbar.measure(this);
   },
 
   onShow() {
@@ -118,5 +121,9 @@ Page({
         }
       },
     });
+  },
+
+  onScroll(e) {
+    scrollbar.onScroll(this, e);
   },
 });

@@ -1,7 +1,9 @@
 const chars = require("../../lib/chars");
 const storage = require("../../lib/storage");
 const nav = require("../../lib/nav");
+const scrollbar = require("../../lib/scrollbar");
 const levels = require("../../lib/levels");
+const progress = require("../../lib/progress");
 const { pickOne } = require("../../lib/utils");
 
 Page({
@@ -14,13 +16,17 @@ Page({
     lastResult: null,
     totalChars: 0,
     polyOnly: false,
+    currentRank: "",
+    currentMastery: 0,
   },
 
-    onReady() {
+  onReady() {
     nav.ready();
+    this.setData(scrollbar.createState());
+    scrollbar.measure(this);
   },
 
-onLoad() {
+  onLoad() {
     const settings = storage.getSettings();
     const scopes = chars.listScopes();
     this.setData({
@@ -29,11 +35,24 @@ onLoad() {
       sampleSize: settings.sampleSize,
       totalChars: chars.allChars.length,
     });
+    this.refreshProgress();
     this.refreshLast();
   },
 
   onShow() {
+    this.refreshProgress();
     this.refreshLast();
+  },
+
+  refreshProgress() {
+    const prog = progress.calcProgress(
+      storage.getCharLevels(),
+      chars.allChars.length
+    );
+    this.setData({
+      currentRank: prog.rank,
+      currentMastery: prog.mastery,
+    });
   },
 
   refreshLast() {
@@ -48,7 +67,6 @@ onLoad() {
             ),
             avgValue: "等 " + (Number(last.avgLevel) || 0).toFixed(1),
             avgLevelRound: Math.min(Math.round(Number(last.avgLevel) || 0), 6),
-            rank: levels.rankOf(last.mastery),
           })
         : null,
     });
@@ -121,11 +139,19 @@ onLoad() {
     nav.go("/pages/intro/intro");
   },
 
+  goRankIntro() {
+    nav.go("/pages/intro/intro?anchor=rank");
+  },
+
   goHistory() {
     nav.go("/pages/history/history");
   },
 
   goChars() {
     nav.go("/pages/chars/chars");
+  },
+
+  onScroll(e) {
+    scrollbar.onScroll(this, e);
   },
 });

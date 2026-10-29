@@ -1,0 +1,162 @@
+.detail-head {
+  padding-bottom: 0;
+}
+
+.detail-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: var(--sp-sm);
+}
+
+.nav-btn {
+  font-size: 28rpx;
+  color: #c8553d;
+  padding: 8rpx 16rpx;
+  border-radius: 12rpx;
+  background: #ffffff;
+}
+
+.nav-btn.disabled {
+  color: #c9c2b6;
+  background: #f4efe6;
+}
+
+.detail-hero {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 var(--sp-lg) var(--sp-sm);
+  padding: var(--sp-sm) 0;
+  background: #ffffff;
+  border-radius: 24rpx;
+  box-shadow: 0 4rpx 24rpx rgba(34, 51, 59, 0.06);
+}
+
+.big-char {
+  font-family: "Kaiti SC", "STKaiti", "KaiTi", serif;
+  font-size: 140rpx;
+  line-height: 1.1;
+  color: #22333b;
+}
+
+.hero-meta {
+  display: flex;
+  align-items: center;
+  margin-top: 8rpx;
+}
+
+.hero-level {
+  margin-left: 10rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #22333b;
+}
+
+.tier-tag {
+  margin-left: 12rpx;
+  padding: 2rpx 14rpx;
+  border-radius: 16rpx;
+  background: #f0ebe2;
+  font-size: 22rpx;
+  color: #55636b;
+}
+
+.chip-line {
+  display: flex;
+  flex-wrap: wrap;
+  margin: -6rpx;
+}
+
+.reading-chip,
+.word-chip {
+  margin: 6rpx;
+  padding: 8rpx 20rpx;
+  border-radius: 30rpx;
+  background: #f0ebe2;
+  font-size: 26rpx;
+  color: #22333b;
+}
+
+.reading-chip {
+  background: #22333b;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.sense-row {
+  display: flex;
+  align-items: flex-start;
+  padding: 12rpx 0;
+  border-bottom: 1rpx solid #f0ebe2;
+}
+
+.sense-row:last-child {
+  border-bottom: none;
+}
+
+.sense-p {
+  flex-shrink: 0;
+  width: 110rpx;
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #c8553d;
+}
+
+.sense-m {
+  flex: 1;
+  font-size: 26rpx;
+  color: #22333b;
+  line-height: 1.5;
+}
+
+.detail-text {
+  font-size: 28rpx;
+  color: #22333b;
+  line-height: 1.6;
+}
+
+.info-row {
+  display: flex;
+  align-items: center;
+  padding: 10rpx 0;
+}
+
+.info-label {
+  width: 100rpx;
+  font-size: 26rpx;
+  color: #7a858c;
+}
+
+.info-value {
+  font-size: 28rpx;
+  color: #22333b;
+  font-weight: 600;
+}
+
+.stroke-list {
+  display: flex;
+  flex-wrap: wrap;
+  margin: -6rpx;
+}
+
+.stroke-item {
+  display: flex;
+  align-items: center;
+  margin: 6rpx;
+  padding: 6rpx 14rpx;
+  border-radius: 10rpx;
+  background: #f7f3ec;
+}
+
+.stroke-no {
+  font-size: 20rpx;
+  color: #a29a8e;
+  margin-right: 6rpx;
+}
+
+.stroke-name {
+  font-size: 24rpx;
+  color: #22333b;
+}

@@ -1,0 +1,64 @@
+<view class="page">
+  <view class="page-head">
+    <view class="page-title">字库</view>
+    <view class="page-sub">{{scopeName}}档 · 共 {{pool.length}} 字</view>
+  </view>
+
+  <view class="list-head">
+    <input
+      class="search-input"
+      value="{{keyword}}"
+      placeholder="输入一个字查找"
+      maxlength="1"
+      bindinput="onSearch"
+    />
+    <view class="chips scope-chips">
+      <view
+        wx:for="{{scopes}}"
+        wx:key="index"
+        class="chip {{scope === item.index ? 'active' : ''}}"
+        data-index="{{item.index}}"
+        bindtap="onScopeTap"
+      >{{item.name}}</view>
+    </view>
+  </view>
+
+  <view class="body-wrap">
+    <scroll-view
+      scroll-y
+      enhanced="{{true}}"
+      show-scrollbar="{{false}}"
+      class="page-body"
+      scroll-into-view="{{intoView}}"
+      bindscrolltolower="onScrollToLower"
+      bindscroll="onScroll"
+    >
+      <view class="container">
+        <view class="muted list-hint" wx:if="{{emptyHint}}">{{emptyHint}}</view>
+        <view class="cell-grid">
+          <view
+            wx:for="{{chars}}"
+            wx:key="char"
+            id="cell-{{index}}"
+            class="char-mini {{highlightIndex === index ? 'target' : ''}}"
+            data-char="{{item.char}}"
+            data-index="{{index}}"
+            bindtap="goDetail"
+          >
+            <view class="mini-char">{{item.char}}</view>
+            <view wx:if="{{item.mark}}" class="mini-level lv{{item.level}}">{{item.mark}}</view>
+          </view>
+        </view>
+        <view class="muted list-more" wx:if="{{hasMore}}">上滑加载更多…</view>
+      </view>
+    </scroll-view>
+
+    <view class="scrollbar {{showBar ? 'show' : ''}}">
+      <view class="scrollbar-thumb" style="top: {{barTop}}%; height: {{barHeight}}%"></view>
+    </view>
+  </view>
+
+  <view class="page-footer">
+    <view class="btn ghost" bindtap="goHome">回首页</view>
+  </view>
+</view>

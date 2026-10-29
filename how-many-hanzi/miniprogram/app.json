@@ -5,7 +5,9 @@
     "pages/result/result",
     "pages/intro/intro",
     "pages/history/history",
-    "pages/chars/chars"
+    "pages/chars/chars",
+    "pages/chars-list/chars-list",
+    "pages/char-detail/char-detail"
   ],
   "window": {
     "backgroundColor": "#F7F3EC",

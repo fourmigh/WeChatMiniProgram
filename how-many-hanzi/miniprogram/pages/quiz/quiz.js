@@ -3,6 +3,7 @@ const engine = require("../../lib/engine");
 const quiz = require("../../lib/quiz");
 const storage = require("../../lib/storage");
 const nav = require("../../lib/nav");
+const scrollbar = require("../../lib/scrollbar");
 const levels = require("../../lib/levels");
 
 const LEVELS = [
@@ -50,6 +51,8 @@ Page({
 
     onReady() {
     nav.ready();
+    this.setData(scrollbar.createState());
+    scrollbar.measure(this);
   },
 
 onLoad(options) {
@@ -247,5 +250,9 @@ onLoad(options) {
 
   goBack() {
     wx.navigateBack({ delta: 1 });
+  },
+
+  onScroll(e) {
+    scrollbar.onScroll(this, e);
   },
 });

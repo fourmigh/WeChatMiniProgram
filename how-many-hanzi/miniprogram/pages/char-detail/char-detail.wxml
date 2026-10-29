@@ -1,0 +1,95 @@
+<view class="page">
+  <view class="page-head detail-head">
+    <view class="detail-nav">
+      <view class="nav-btn {{hasPrev ? '' : 'disabled'}}" bindtap="goPrev">‹ 上一个</view>
+      <view class="muted">{{index + 1}} / {{poolLen}}</view>
+      <view class="nav-btn {{hasNext ? '' : 'disabled'}}" bindtap="goNext">下一个 ›</view>
+    </view>
+  </view>
+
+  <view class="detail-hero">
+    <view class="big-char">{{char}}</view>
+    <view class="hero-meta" wx:if="{{mark}}">
+      <text class="lv-mark lv{{level}}">{{mark}}</text>
+      <text class="hero-level">{{levelName}}</text>
+      <text class="tier-tag" wx:if="{{tierName}}">{{tierName}}</text>
+    </view>
+    <view class="hero-meta" wx:else>
+      <text class="muted">尚未测过</text>
+      <text class="tier-tag" wx:if="{{tierName}}">{{tierName}}</text>
+    </view>
+  </view>
+
+  <view class="body-wrap">
+    <scroll-view
+      scroll-y
+      enhanced="{{true}}"
+      show-scrollbar="{{false}}"
+      class="page-body"
+      scroll-into-view="{{intoView}}"
+      bindscroll="onScroll"
+    >
+      <view class="container">
+        <view id="detail-top"></view>
+
+      <view class="card" wx:if="{{readings.length}}">
+        <view class="section-title">读音</view>
+        <view class="chip-line">
+          <text class="reading-chip" wx:for="{{readings}}" wx:key="*this">{{item}}</text>
+        </view>
+        <view class="muted mt" wx:if="{{isPoly}}">多音字，共 {{readings.length}} 个读音</view>
+      </view>
+
+      <view class="card" wx:if="{{senses.length}}">
+        <view class="section-title">读音与字义</view>
+        <view class="sense-row" wx:for="{{senses}}" wx:key="p">
+          <text class="sense-p">{{item.p}}</text>
+          <text class="sense-m">{{item.m}}</text>
+        </view>
+      </view>
+
+      <view class="card" wx:if="{{explain}}">
+        <view class="section-title">释义</view>
+        <view class="detail-text">{{explain}}</view>
+      </view>
+
+      <view class="card">
+        <view class="section-title">字理</view>
+        <view class="info-row">
+          <text class="info-label">部首</text>
+          <text class="info-value">{{radical || "—"}}</text>
+        </view>
+        <view class="info-row">
+          <text class="info-label">笔画</text>
+          <text class="info-value">{{strokes ? strokes + " 画" : "—"}}</text>
+        </view>
+      </view>
+
+      <view class="card" wx:if="{{strokeNames.length}}">
+        <view class="section-title">笔顺</view>
+        <view class="stroke-list">
+          <view class="stroke-item" wx:for="{{strokeNames}}" wx:key="no">
+            <text class="stroke-no">{{item.no}}</text>
+            <text class="stroke-name">{{item.name}}</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="card" wx:if="{{words.length}}">
+        <view class="section-title">组词</view>
+        <view class="chip-line">
+          <text class="word-chip" wx:for="{{words}}" wx:key="*this">{{item}}</text>
+        </view>
+      </view>
+    </view>
+    </scroll-view>
+
+    <view class="scrollbar {{showBar ? 'show' : ''}}">
+      <view class="scrollbar-thumb" style="top: {{barTop}}%; height: {{barHeight}}%"></view>
+    </view>
+  </view>
+
+  <view class="page-footer">
+    <view class="btn ghost" bindtap="goHome">回首页</view>
+  </view>
+</view>

@@ -45,6 +45,41 @@ page {
   min-height: 0;
 }
 
+.body-wrap {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  display: flex;
+}
+
+.body-wrap .page-body {
+  flex: 1;
+}
+
+.scrollbar {
+  position: absolute;
+  right: 4rpx;
+  top: 12rpx;
+  bottom: 12rpx;
+  width: 8rpx;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.scrollbar.show {
+  opacity: 1;
+}
+
+.scrollbar-thumb {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  min-height: 40rpx;
+  background: rgba(34, 51, 59, 0.3);
+  border-radius: 4rpx;
+}
+
 .page-footer {
   flex-shrink: 0;
   padding: var(--sp-xs) var(--sp-lg) calc(var(--sp-xs) + env(safe-area-inset-bottom));

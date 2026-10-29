@@ -1,7 +1,9 @@
 const storage = require("../../lib/storage");
 const nav = require("../../lib/nav");
+const scrollbar = require("../../lib/scrollbar");
 const levels = require("../../lib/levels");
 const charsLib = require("../../lib/chars");
+const progress = require("../../lib/progress");
 
 const LEVEL_NAMES = ["未识", "识形", "读音", "明义", "能写", "善用", "通源"];
 
@@ -20,6 +22,8 @@ Page({
 
   onReady() {
     nav.ready();
+    this.setData(scrollbar.createState());
+    scrollbar.measure(this);
   },
 
   onShow() {
@@ -56,27 +60,17 @@ Page({
     }
 
     const totalChars = charsLib.allChars.length;
-    let sum = 0;
-    list.forEach((c) => {
-      sum += c.level;
-    });
-    const coverage = list.length
-      ? Math.round((list.length / totalChars) * 10000) / 100
-      : 0;
-    const depth = list.length ? sum / (list.length * 6) : 0;
-    const confidence = list.length ? Math.sqrt(list.length / totalChars) : 0;
-    const mastery = Math.round(depth * confidence * 100);
-    const rank = levels.rankOf(mastery);
+    const prog = progress.calcProgress(charLevels, totalChars);
 
     this.setData({
       count: list.length,
       dist: dist,
       groups: groups,
       hasData: list.length > 0,
-      totalChars: totalChars,
-      coverage: coverage,
-      mastery: mastery,
-      rank: rank,
+      totalChars: prog.total,
+      coverage: prog.coverage,
+      mastery: prog.mastery,
+      rank: prog.rank,
     });
   },
 
@@ -131,5 +125,9 @@ Page({
 
   goHome() {
     nav.relaunch("/pages/index/index");
+  },
+
+  onScroll(e) {
+    scrollbar.onScroll(this, e);
   },
 });

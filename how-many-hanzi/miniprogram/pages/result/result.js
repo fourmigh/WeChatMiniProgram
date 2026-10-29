@@ -1,4 +1,5 @@
 const nav = require("../../lib/nav");
+const scrollbar = require("../../lib/scrollbar");
 const levels = require("../../lib/levels");
 
 const LEVEL_DESC = [
@@ -25,6 +26,8 @@ Page({
 
     onReady() {
     nav.ready();
+    this.setData(scrollbar.createState());
+    scrollbar.measure(this);
   },
 
 onLoad(options) {
@@ -122,5 +125,9 @@ onLoad(options) {
 
   goHistory() {
     nav.go("/pages/history/history");
+  },
+
+  onScroll(e) {
+    scrollbar.onScroll(this, e);
   },
 });

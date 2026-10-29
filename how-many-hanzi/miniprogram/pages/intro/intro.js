@@ -1,5 +1,6 @@
 const chars = require("../../lib/chars");
 const nav = require("../../lib/nav");
+const scrollbar = require("../../lib/scrollbar");
 const levels = require("../../lib/levels");
 
 const LEVEL_LIST = [
@@ -14,7 +15,7 @@ const LEVEL_LIST = [
 
 function buildRanks() {
   const asc = levels.RANKS.slice().reverse();
-  return asc.map((r, i) => {
+  const list = asc.map((r, i) => {
     const next = asc[i + 1];
     let range;
     if (!next) range = "≥ " + r.min + "%";
@@ -22,6 +23,12 @@ function buildRanks() {
     else range = r.min + "–" + (next.min - 1) + "%";
     return { name: r.name, desc: r.desc, range: range };
   });
+  list.unshift({
+    name: levels.RANK_ZERO,
+    range: "测字 < " + levels.RANK_MIN_CHARS,
+    desc: "尚未启蒙",
+  });
+  return list;
 }
 
 Page({
@@ -30,13 +37,20 @@ Page({
     ranks: [],
     scopes: [],
     total: 0,
+    intoView: "",
   },
 
   onReady() {
     nav.ready();
+    this.setData(scrollbar.createState());
+    scrollbar.measure(this);
+    if (this.anchor === "rank") {
+      this.setData({ intoView: "rank-card" });
+    }
   },
 
-  onLoad() {
+  onLoad(options) {
+    this.anchor = (options && options.anchor) || "";
     this.setData({
       levels: LEVEL_LIST.map((x) =>
         Object.assign({}, x, { mark: levels.markOf(x.n) })
@@ -47,7 +61,16 @@ Page({
     });
   },
 
+  openScope(e) {
+    const index = Number(e.currentTarget.dataset.index);
+    nav.go("/pages/chars-list/chars-list?scope=" + index);
+  },
+
   goHome() {
     nav.relaunch("/pages/index/index");
+  },
+
+  onScroll(e) {
+    scrollbar.onScroll(this, e);
   },
 });

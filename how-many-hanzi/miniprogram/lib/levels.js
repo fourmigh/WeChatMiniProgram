@@ -1,5 +1,8 @@
 const LEVEL_MARKS = ["庚", "己", "戊", "丁", "丙", "乙", "甲"];
 
+const RANK_ZERO = "白丁";
+const RANK_MIN_CHARS = 18;
+
 const RANKS = [
   { min: 85, name: "状元", desc: "登峰造极" },
   { min: 70, name: "进士", desc: "融会贯通" },
@@ -36,6 +39,8 @@ function avgText(avg) {
 module.exports = {
   LEVEL_MARKS,
   RANKS,
+  RANK_ZERO,
+  RANK_MIN_CHARS,
   markOf,
   labelOf,
   rankOf,

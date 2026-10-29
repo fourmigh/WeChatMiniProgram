@@ -102,6 +102,13 @@ function getPrimaryReading(ch) {
   return list && list.length ? list[0] : "";
 }
 
+function getTierOf(ch) {
+  for (let i = 0; i < tierChars.length; i++) {
+    if (tierChars[i].indexOf(ch) > -1) return i;
+  }
+  return -1;
+}
+
 const extraStrokeMap = {};
 for (const line of (data.extraStrokes || "").split("\n")) {
   const i = line.indexOf("|");
@@ -144,6 +151,7 @@ module.exports = {
   getSenses,
   getReadings,
   getPrimaryReading,
+  getTierOf,
   getExtraStrokeNames,
   getExtraWords,
 };

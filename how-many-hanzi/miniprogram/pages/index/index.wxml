@@ -1,10 +1,17 @@
 <view class="page">
-  <view class="page-head">
-    <view class="page-title">我到底认识几个汉字</view>
-    <view class="page-sub">从识形到通源，六级汉字能力自测 · 共 {{totalChars}} 字</view>
+  <view class="page-head page-head-row">
+    <view class="head-left">
+      <view class="page-title">我到底认识几个汉字</view>
+      <view class="page-sub">从识形到通源，六级汉字能力自测 · 共 {{totalChars}} 字</view>
+    </view>
+    <view class="head-rank" bindtap="goRankIntro">
+      <text class="lv-rank">{{currentRank}}</text>
+      <view class="head-rank-label">当前功名 ›</view>
+    </view>
   </view>
 
-  <scroll-view scroll-y enhanced="{{true}}" show-scrollbar="{{false}}" class="page-body">
+  <view class="body-wrap">
+    <scroll-view scroll-y enhanced="{{true}}" show-scrollbar="{{false}}" class="page-body" bindscroll="onScroll">
     <view class="container">
       <view class="card">
         <view class="card-head">
@@ -76,12 +83,15 @@
               <text class="lv-mark sm lv{{lastResult.avgLevelRound}}">{{lastResult.avgMark}}</text>
               <text class="last-avg">{{lastResult.avgValue}}</text>
             </view>
-            <view class="last-rank"><text class="lv-rank sm">{{lastResult.rank}}</text></view>
           </view>
         </view>
       </view>
     </view>
   </scroll-view>
+    <view class="scrollbar {{showBar ? 'show' : ''}}">
+      <view class="scrollbar-thumb" style="top: {{barTop}}%; height: {{barHeight}}%"></view>
+    </view>
+  </view>
 
   <view class="page-footer footer">
     <view class="footer-link" bindtap="goIntro">等级说明</view>

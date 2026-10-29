@@ -4,7 +4,15 @@
     <view class="page-sub">从识形到通源，六级汉字能力自测 · 共 {{total}} 字</view>
   </view>
 
-  <scroll-view scroll-y enhanced="{{true}}" show-scrollbar="{{false}}" class="page-body">
+  <view class="body-wrap">
+    <scroll-view
+    scroll-y
+    enhanced="{{true}}"
+    show-scrollbar="{{false}}"
+    class="page-body"
+    scroll-into-view="{{intoView}}"
+    bindscroll="onScroll"
+  >
     <view class="container">
       <view class="card">
         <view class="muted level-note">甲/乙/丙/丁/戊/己 为传统分级用字，甲最高。</view>
@@ -19,7 +27,7 @@
         </view>
       </view>
 
-      <view class="card">
+      <view class="card" id="rank-card">
         <view class="section-title">科举功名</view>
         <view class="muted">字库页的「掌握度」以科举功名表示：</view>
         <view class="rank-row" wx:for="{{ranks}}" wx:key="name">
@@ -27,16 +35,24 @@
           <view class="rank-range">{{item.range}}</view>
           <view class="rank-desc">{{item.desc}}</view>
         </view>
+        <view class="rule">测字不足 18 个时，不论成绩一律为「白丁」。</view>
+        <view class="rule">掌握度 = 已测字平均等级 × 字库覆盖率的平方根。</view>
         <view class="muted mt">取自科举晋升序列：童生 → 秀才 → 举人 → 贡士 → 进士 → 状元（另加「蒙童」启蒙档）。</view>
       </view>
 
       <view class="card">
         <view class="section-title">字库档位</view>
-        <view class="scope-row" wx:for="{{scopes}}" wx:key="index">
+        <view
+          class="scope-row"
+          wx:for="{{scopes}}"
+          wx:key="index"
+          data-index="{{item.index}}"
+          bindtap="openScope"
+        >
           <view class="scope-name">{{item.name}}</view>
-          <view class="scope-count">{{item.count}} 字</view>
+          <view class="scope-count">{{item.count}} 字 ›</view>
         </view>
-        <view class="muted mt">全部字库共 {{total}} 字，按启蒙、小学、初中、高中逐级累进。</view>
+        <view class="muted mt">全部字库共 {{total}} 字，按启蒙、小学、初中、高中逐级累进。点击档位可浏览该档全部字。</view>
       </view>
 
       <view class="card">
@@ -48,6 +64,10 @@
       </view>
     </view>
   </scroll-view>
+    <view class="scrollbar {{showBar ? 'show' : ''}}">
+      <view class="scrollbar-thumb" style="top: {{barTop}}%; height: {{barHeight}}%"></view>
+    </view>
+  </view>
 
   <view class="page-footer">
     <view class="btn ghost" bindtap="goHome">回首页</view>
