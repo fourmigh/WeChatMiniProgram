@@ -1,13 +1,16 @@
 const storage = require("../../lib/storage");
 const nav = require("../../lib/nav");
-const scrollbar = require("../../lib/scrollbar");
 const levels = require("../../lib/levels");
 const charsLib = require("../../lib/chars");
 const progress = require("../../lib/progress");
+const i18n = require("../../lib/i18n");
+const { definePage } = require("../../lib/page-base");
 
-const LEVEL_NAMES = ["未识", "识形", "读音", "明义", "能写", "善用", "通源"];
+const LEVEL_NAMES = levels.LEVEL_NAMES;
 
-Page({
+definePage({
+  page: "chars",
+  titleKey: "pages.chars.title",
   data: {
     count: 0,
     dist: [],
@@ -18,12 +21,9 @@ Page({
     coverage: 0,
     mastery: 0,
     rank: "",
-  },
-
-  onReady() {
-    nav.ready();
-    this.setData(scrollbar.createState());
-    scrollbar.measure(this);
+    rareCount: 0,
+    subtitle: "",
+    emptyRare: "",
   },
 
   onShow() {
@@ -33,6 +33,7 @@ Page({
   load() {
     const charLevels = storage.getCharLevels();
     const list = Object.keys(charLevels)
+      .filter((ch) => charsLib.getTierOf(ch) >= 0)
       .map((ch) => ({
         char: ch,
         level: charLevels[ch],
@@ -60,7 +61,12 @@ Page({
     }
 
     const totalChars = charsLib.allChars.length;
-    const prog = progress.calcProgress(charLevels, totalChars);
+    const validLevels = {};
+    list.forEach((c) => {
+      validLevels[c.char] = c.level;
+    });
+    const prog = progress.calcProgress(validLevels, totalChars);
+    const rareCount = storage.getRareChars().length;
 
     this.setData({
       count: list.length,
@@ -71,6 +77,11 @@ Page({
       coverage: prog.coverage,
       mastery: prog.mastery,
       rank: prog.rank,
+      rareCount: rareCount,
+      subtitle: i18n.t("pages.chars.subtitle", { n: list.length }),
+      emptyRare: rareCount
+        ? i18n.t("pages.chars.emptyRare", { n: rareCount })
+        : "",
     });
   },
 
@@ -86,7 +97,7 @@ Page({
     const ch = e.currentTarget.dataset.char;
     nav.go(
       "/pages/quiz/quiz?mode=single&char=" + encodeURIComponent(ch) + "&scope=4",
-      "正在准备题目"
+      i18n.t("common.navPreparing")
     );
   },
 
@@ -94,8 +105,8 @@ Page({
     const ch = e.currentTarget.dataset.char;
     const self = this;
     wx.showModal({
-      title: "删除记录",
-      content: '确定删除「' + ch + '」的记录吗？',
+      title: i18n.t("pages.chars.modalDeleteTitle"),
+      content: i18n.t("pages.chars.modalDeleteContent", { char: ch }),
       success(res) {
         if (res.confirm) {
           storage.removeChar(ch);
@@ -111,8 +122,8 @@ Page({
   clearChars() {
     const self = this;
     wx.showModal({
-      title: "清空全部",
-      content: "将清空自测历史、最近测过的字与全部字库记录，确定吗？",
+      title: i18n.t("pages.chars.modalClearTitle"),
+      content: i18n.t("pages.chars.modalClearContent"),
       success(res) {
         if (res.confirm) {
           storage.clearAll();
@@ -123,11 +134,7 @@ Page({
     });
   },
 
-  goHome() {
-    nav.relaunch("/pages/index/index");
-  },
-
-  onScroll(e) {
-    scrollbar.onScroll(this, e);
+  goRare() {
+    nav.go("/pages/chars-list/chars-list?scope=hidden");
   },
 });

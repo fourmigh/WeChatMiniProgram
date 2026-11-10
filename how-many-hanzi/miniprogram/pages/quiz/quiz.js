@@ -2,17 +2,17 @@ const chars = require("../../lib/chars");
 const engine = require("../../lib/engine");
 const quiz = require("../../lib/quiz");
 const storage = require("../../lib/storage");
-const nav = require("../../lib/nav");
-const scrollbar = require("../../lib/scrollbar");
 const levels = require("../../lib/levels");
+const { definePage } = require("../../lib/page-base");
+const i18n = require("../../lib/i18n");
 
 const LEVELS = [
-  { n: 1, label: "形" },
-  { n: 2, label: "音" },
-  { n: 3, label: "义" },
-  { n: 4, label: "写" },
-  { n: 5, label: "用" },
-  { n: 6, label: "源" },
+  { n: 1, label: i18n.t("pages.quiz.levelLabels.l1") },
+  { n: 2, label: i18n.t("pages.quiz.levelLabels.l2") },
+  { n: 3, label: i18n.t("pages.quiz.levelLabels.l3") },
+  { n: 4, label: i18n.t("pages.quiz.levelLabels.l4") },
+  { n: 5, label: i18n.t("pages.quiz.levelLabels.l5") },
+  { n: 6, label: i18n.t("pages.quiz.levelLabels.l6") },
 ];
 
 function decorate(options, selected) {
@@ -24,7 +24,10 @@ function decorate(options, selected) {
   });
 }
 
-Page({
+definePage({
+  page: "quiz",
+  titleKey: "pages.quiz.title",
+  home: false,
   data: {
     mode: "test",
     levels: LEVELS,
@@ -45,29 +48,30 @@ Page({
     feedback: "",
     feedbackSub: "",
     answerText: "",
-    nextText: "继续",
+    nextText: i18n.t("pages.quiz.next"),
     scrollTop: 0,
   },
 
-    onReady() {
-    nav.ready();
-    this.setData(scrollbar.createState());
-    scrollbar.measure(this);
-  },
-
-onLoad(options) {
+  onLoad(options) {
     this.mode = options.mode === "single" ? "single" : "test";
     this.scope = Number(options.scope || 4);
     this.pool = chars.getCharsByScope(this.scope);
 
     if (this.mode === "single") {
       const ch = decodeURIComponent(options.char || "");
+      if (chars.getTierOf(ch) < 0) {
+        wx.showToast({ title: i18n.t("pages.quiz.blockedRare"), icon: "none" });
+        setTimeout(function () {
+          wx.navigateBack({ delta: 1 });
+        }, 1200);
+        return;
+      }
       this.test = engine.createCharTest(ch);
       this.setData({
         mode: "single",
         char: ch,
         total: 1,
-        progressText: "单字测级",
+        progressText: i18n.t("pages.quiz.progressSingle"),
       });
       this.loadQuestion();
     } else {
@@ -76,7 +80,10 @@ onLoad(options) {
       this.setData({
         mode: "test",
         total: this.session.chars.length,
-        progressText: "第 1 / " + this.session.chars.length + " 字",
+        progressText: i18n.t("pages.quiz.progressChar", {
+          i: 1,
+          n: this.session.chars.length,
+        }),
       });
       this.startCurrentChar();
     }
@@ -93,7 +100,10 @@ onLoad(options) {
       char: ch,
       level: 0,
       index: this.session.index,
-      progressText: "第 " + (this.session.index + 1) + " / " + this.session.chars.length + " 字",
+      progressText: i18n.t("pages.quiz.progressChar", {
+        i: this.session.index + 1,
+        n: this.session.chars.length,
+      }),
     });
     this.loadQuestion();
   },
@@ -119,7 +129,7 @@ onLoad(options) {
       feedback: "",
       feedbackSub: "",
       answerText: "",
-      nextText: "继续",
+      nextText: i18n.t("pages.quiz.next"),
       scrollTop: 0,
     });
   },
@@ -148,7 +158,7 @@ onLoad(options) {
   submitAnswer() {
     if (this.data.answered) return;
     if (!this.data.selected.length) {
-      wx.showToast({ title: "请先选择", icon: "none" });
+      wx.showToast({ title: i18n.t("pages.quiz.toastSelectFirst"), icon: "none" });
       return;
     }
     const q = this.data.question;
@@ -165,8 +175,14 @@ onLoad(options) {
 
     const lastChar =
       this.mode === "test" && this.session.index + 1 >= this.session.chars.length;
-    let nextText = "继续";
-    if (this.test.done) nextText = lastChar ? "查看结果" : this.mode === "test" ? "下一个字" : "查看结果";
+    let nextText = i18n.t("pages.quiz.next");
+    if (this.test.done) {
+      nextText = lastChar
+        ? i18n.t("pages.quiz.viewResult")
+        : this.mode === "test"
+        ? i18n.t("pages.quiz.nextChar")
+        : i18n.t("pages.quiz.viewResult");
+    }
 
     this.setData({
       answered: true,
@@ -174,12 +190,20 @@ onLoad(options) {
       optionViews: views,
       level: this.test.level,
       levelMark: levels.markOf(this.test.level),
-      feedback: correct ? "回答正确" : "回答错误",
+      feedback: correct
+        ? i18n.t("pages.quiz.correct")
+        : i18n.t("pages.quiz.wrong"),
       feedbackSub: correct
         ? this.test.queue && this.test.queue.length
-          ? "回答正确，继续"
-          : "达到 " + levels.markOf(q.level) + " " + q.levelName
-        : "停在 " + levels.markOf(this.test.level) + " " + quiz.LEVEL_NAMES[this.test.level],
+          ? i18n.t("pages.quiz.correctSubQueue")
+          : i18n.t("pages.quiz.correctSubLevel", {
+              mark: levels.markOf(q.level),
+              name: q.levelName,
+            })
+        : i18n.t("pages.quiz.wrongSubLevel", {
+            mark: levels.markOf(this.test.level),
+            name: quiz.LEVEL_NAMES[this.test.level],
+          }),
       answerText: q.answer.join(" / "),
       nextText: nextText,
     });
@@ -195,6 +219,11 @@ onLoad(options) {
   },
 
   finishChar() {
+    if (chars.getTierOf(this.test.char) < 0) {
+      wx.showToast({ title: i18n.t("pages.quiz.blockedRare"), icon: "none" });
+      wx.navigateBack({ delta: 1 });
+      return;
+    }
     storage.addCharRecord({
       char: this.test.char,
       level: this.test.level,
@@ -250,9 +279,5 @@ onLoad(options) {
 
   goBack() {
     wx.navigateBack({ delta: 1 });
-  },
-
-  onScroll(e) {
-    scrollbar.onScroll(this, e);
   },
 });

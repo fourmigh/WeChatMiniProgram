@@ -18,6 +18,52 @@
   line-height: 1.2;
 }
 
+.rare-fixed {
+  flex-shrink: 0;
+  padding: 0 var(--sp-lg);
+}
+
+.rare-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20rpx 24rpx;
+  margin-bottom: var(--sp-sm);
+}
+
+.rare-entry-left {
+  display: flex;
+  align-items: baseline;
+}
+
+.rare-entry-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #c8553d;
+}
+
+.rare-entry-sub {
+  margin-left: 10rpx;
+  font-size: 22rpx;
+  color: #a29a8e;
+}
+
+.rare-entry-right {
+  display: flex;
+  align-items: center;
+}
+
+.rare-entry-count {
+  font-size: 24rpx;
+  color: #7a858c;
+}
+
+.rare-entry-arrow {
+  margin-left: 8rpx;
+  font-size: 28rpx;
+  color: #c9c2b6;
+}
+
 .rank-line {
   display: flex;
   align-items: center;

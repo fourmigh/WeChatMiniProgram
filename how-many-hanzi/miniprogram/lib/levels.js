@@ -1,20 +1,29 @@
-const LEVEL_MARKS = ["庚", "己", "戊", "丁", "丙", "乙", "甲"];
+const LEVEL_TEXT = require("../locales/zh-CN").levels;
 
-const RANK_ZERO = "白丁";
-const RANK_MIN_CHARS = 18;
+const LEVEL_MARKS = LEVEL_TEXT.marks.slice();
+const LEVEL_NAMES = LEVEL_TEXT.names.slice();
+const RESULT_DESC = LEVEL_TEXT.resultDesc.slice();
+const INTRO_DESC = LEVEL_TEXT.introDesc.slice();
 
-const RANKS = [
-  { min: 85, name: "状元", desc: "登峰造极" },
-  { min: 70, name: "进士", desc: "融会贯通" },
-  { min: 55, name: "贡士", desc: "登堂入室" },
-  { min: 40, name: "举人", desc: "渐入佳境" },
-  { min: 25, name: "秀才", desc: "粗通文义" },
-  { min: 10, name: "童生", desc: "略有所得" },
-  { min: 0, name: "蒙童", desc: "初识门径" },
-];
+const RANK_ZERO = LEVEL_TEXT.zero.name;
+const RANK_MIN_CHARS = LEVEL_TEXT.minChars;
+
+const RANKS = LEVEL_TEXT.rankOrder
+  .slice()
+  .reverse()
+  .map((key) => ({
+    key: key,
+    min: LEVEL_TEXT.ranks[key].min,
+    name: LEVEL_TEXT.ranks[key].name,
+    desc: LEVEL_TEXT.ranks[key].desc,
+  }));
 
 function markOf(level) {
   return LEVEL_MARKS[Number(level)] || "";
+}
+
+function levelName(level) {
+  return LEVEL_NAMES[Number(level)] || "";
 }
 
 function labelOf(level, name) {
@@ -33,15 +42,21 @@ function rankOf(percent) {
 function avgText(avg) {
   const value = Number(avg) || 0;
   const lv = Math.min(Math.round(value), 6);
-  return markOf(lv) + "等 " + value.toFixed(1);
+  return LEVEL_TEXT.avgText
+    .replace("{mark}", markOf(lv))
+    .replace("{value}", value.toFixed(1));
 }
 
 module.exports = {
   LEVEL_MARKS,
+  LEVEL_NAMES,
+  RESULT_DESC,
+  INTRO_DESC,
   RANKS,
   RANK_ZERO,
   RANK_MIN_CHARS,
   markOf,
+  levelName,
   labelOf,
   rankOf,
   avgText,

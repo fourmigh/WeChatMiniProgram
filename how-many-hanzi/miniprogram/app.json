@@ -13,7 +13,7 @@
     "backgroundColor": "#F7F3EC",
     "backgroundTextStyle": "light",
     "navigationBarBackgroundColor": "#F7F3EC",
-    "navigationBarTitleText": "我到底认识几个汉字",
+    "navigationBarTitleText": "",
     "navigationBarTextStyle": "black"
   },
   "sitemapLocation": "sitemap.json",

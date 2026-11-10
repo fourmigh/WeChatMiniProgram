@@ -2,8 +2,9 @@ const chars = require("./chars");
 const hanzi = require("./hanzi");
 const D = require("./distractors");
 const { shuffle, pickOne, randomInt } = require("./utils");
+const i18n = require("./i18n");
 
-const LEVEL_NAMES = ["未识", "识形", "读音", "明义", "能写", "善用", "通源"];
+const LEVEL_NAMES = require("../locales/zh-CN").levels.names.slice();
 
 function buildOptions(correct, distractors) {
   return shuffle([correct].concat(distractors));
@@ -63,7 +64,7 @@ function buildSenseQuestion(ch, sense, senses, pool) {
     distractors = distractors.concat(extra);
   }
   if (distractors.length < 3) return null;
-  const q = base(ch, 3, '它读「' + sense.p + '」时的主要意思是？');
+  const q = base(ch, 3, i18n.t("quiz.q.l3sense", { p: sense.p }));
   q.options = buildOptions(sense.m, distractors);
   q.answer = [sense.m];
   return q;
@@ -84,7 +85,7 @@ function base(ch, level, question) {
 function buildLevel1(ch, pool) {
   const distractors = D.pickFormSimilar(ch, 3, pool);
   if (distractors.length < 3) return null;
-  const q = base(ch, 1, "下面哪个字与它完全相同？");
+  const q = base(ch, 1, i18n.t("quiz.q.l1"));
   q.options = buildOptions(ch, distractors);
   q.answer = [ch];
   return q;
@@ -100,7 +101,7 @@ function buildLevel2(ch, pool) {
       (p) => !seen[p]
     );
     if (!distractors.length) return null;
-    const q = base(ch, 2, "它有哪些读音？（多选）");
+    const q = base(ch, 2, i18n.t("quiz.q.l2poly"));
     q.type = "multi";
     q.options = shuffle(readings.concat(distractors));
     q.answer = readings.slice();
@@ -110,7 +111,7 @@ function buildLevel2(ch, pool) {
   if (!correct) return null;
   const distractors = D.pickPinyins(correct, 3, pool);
   if (distractors.length < 3) return null;
-  const q = base(ch, 2, "它的正确读音是？");
+  const q = base(ch, 2, i18n.t("quiz.q.l2single"));
   q.options = buildOptions(correct, distractors);
   q.answer = [correct];
   return q;
@@ -121,7 +122,7 @@ function buildLevel3(ch, pool) {
   if (!correct) return null;
   const distractors = D.pickExplanations(correct, 3, pool);
   if (distractors.length < 3) return null;
-  const q = base(ch, 3, "它的主要意思是？");
+  const q = base(ch, 3, i18n.t("quiz.q.l3"));
   q.options = buildOptions(correct, distractors);
   q.answer = [correct];
   return q;
@@ -130,14 +131,15 @@ function buildLevel3(ch, pool) {
 function buildLevel4(ch, pool) {
   const names = hanzi
     .getStrokeNames(ch)
-    .map((n) => String(n).split("|")[0].replace(/\d+$/, ""))
-    .filter(Boolean);
+    .map((n) => (n == null ? "" : String(n)))
+    .map((s) => s.split("|")[0].replace(/\d+$/, ""))
+    .filter((s) => s && s !== "null" && s !== "undefined");
   if (names.length < 2) return null;
   const idx = randomInt(names.length);
   const correct = names[idx];
   const distractors = D.pickStrokeNames(correct, 3);
   if (distractors.length < 3) return null;
-  const q = base(ch, 4, "它的第 " + (idx + 1) + " 笔是？");
+  const q = base(ch, 4, i18n.t("quiz.q.l4", { n: idx + 1 }));
   q.options = buildOptions(correct, distractors);
   q.answer = [correct];
   return q;
@@ -152,7 +154,7 @@ function buildLevel5(ch, pool) {
   const correct = pickOne(words);
   const distractors = D.pickWords(correct, 3, pool);
   if (distractors.length < 3) return null;
-  const q = base(ch, 5, "下面哪个词语包含这个字？");
+  const q = base(ch, 5, i18n.t("quiz.q.l5"));
   q.options = buildOptions(correct, distractors);
   q.answer = [correct];
   return q;
@@ -163,7 +165,7 @@ function buildLevel6(ch, pool) {
   if (!correct) return null;
   const distractors = D.pickRadicals(correct, 3, pool);
   if (distractors.length < 3) return null;
-  const q = base(ch, 6, "它的部首是？");
+  const q = base(ch, 6, i18n.t("quiz.q.l6"));
   q.options = buildOptions(correct, distractors);
   q.answer = [correct];
   return q;

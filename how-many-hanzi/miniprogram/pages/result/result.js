@@ -1,20 +1,13 @@
 const nav = require("../../lib/nav");
-const scrollbar = require("../../lib/scrollbar");
 const levels = require("../../lib/levels");
+const i18n = require("../../lib/i18n");
+const { definePage } = require("../../lib/page-base");
 
-const LEVEL_DESC = [
-  "尚未认识",
-  "能辨认字形，但读音、意义掌握有限",
-  "知道读音；多音字能选出全部读音",
-  "明白主要含义；多音字按读音对应不同意思",
-  "掌握笔顺，能够书写",
-  "能组词、会运用",
-  "了解部首与构字来源",
-];
+const LEVEL_DESC = levels.RESULT_DESC;
+const LEVEL_LABEL = levels.LEVEL_NAMES;
 
-const LEVEL_LABEL = ["未识", "识形", "读音", "明义", "能写", "善用", "通源"];
-
-Page({
+definePage({
+  page: "result",
   data: {
     result: null,
     mode: "test",
@@ -24,13 +17,7 @@ Page({
     hasResult: false,
   },
 
-    onReady() {
-    nav.ready();
-    this.setData(scrollbar.createState());
-    scrollbar.measure(this);
-  },
-
-onLoad(options) {
+  onLoad(options) {
     const app = getApp();
     const result = app.globalData.result;
     if (!result) {
@@ -38,15 +25,14 @@ onLoad(options) {
       return;
     }
     const mode = result.mode || options.mode || "test";
-    wx.setNavigationBarTitle({
-      title: mode === "single" ? "测字结果" : "自测结果",
-    });
 
     const data = {
       result: result,
       mode: mode,
       hasResult: true,
-      pageTitle: mode === "single" ? "测字结果" : "自测结果",
+      pageTitle: i18n.t(
+        mode === "single" ? "pages.result.titleSingle" : "pages.result.titleTest"
+      ),
       levelMark: levels.markOf(result.level),
     };
 
@@ -94,7 +80,7 @@ onLoad(options) {
         });
       }
       data.bars = bars;
-      data.desc = "本次抽样 " + result.count + " 个字";
+      data.desc = i18n.t("pages.result.descSampled", { n: result.count });
       data.rank = levels.rankOf(result.mastery);
     }
 
@@ -107,27 +93,19 @@ onLoad(options) {
     if (r.mode === "test") {
       nav.go(
         "/pages/quiz/quiz?mode=test&scope=" + r.scope + "&size=" + r.count,
-        "正在抽题"
+        i18n.t("common.navSampling")
       );
     } else {
       nav.go(
         "/pages/quiz/quiz?mode=single&char=" +
           encodeURIComponent(r.char) +
           "&scope=4",
-        "正在准备题目"
+        i18n.t("common.navPreparing")
       );
     }
   },
 
-  goHome() {
-    nav.relaunch("/pages/index/index");
-  },
-
   goHistory() {
     nav.go("/pages/history/history");
-  },
-
-  onScroll(e) {
-    scrollbar.onScroll(this, e);
   },
 });

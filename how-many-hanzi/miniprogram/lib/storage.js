@@ -4,6 +4,7 @@ const KEY_SETTINGS = "hmh:settings";
 const KEY_HISTORY = "hmh:history";
 const KEY_CHAR_LEVELS = "hmh:charLevels";
 const KEY_RECENT_CHARS = "hmh:recentChars";
+const KEY_RARE_CHARS = "hmh:rareChars";
 const KEY_SCHEMA = "hmh:schemaVersion";
 const SCHEMA_VERSION = 2;
 const MAX_HISTORY = 50;
@@ -82,6 +83,28 @@ function saveCharLevel(ch, level) {
 function getRecentChars() {
   const list = read(KEY_RECENT_CHARS, []);
   return Array.isArray(list) ? list : [];
+}
+
+function getRareChars() {
+  const list = read(KEY_RARE_CHARS, []);
+  return Array.isArray(list) ? list : [];
+}
+
+function addRareChar(ch) {
+  if (!ch) return false;
+  const list = getRareChars();
+  if (list.some((r) => r.char === ch)) return false;
+  const now = new Date();
+  const pad = (n) => (n < 10 ? "0" + n : "" + n);
+  const dateText =
+    now.getFullYear() +
+    "-" +
+    pad(now.getMonth() + 1) +
+    "-" +
+    pad(now.getDate());
+  list.unshift({ char: ch, at: now.getTime(), dateText: dateText });
+  write(KEY_RARE_CHARS, list);
+  return true;
 }
 
 function addCharRecord(record) {
@@ -168,6 +191,8 @@ module.exports = {
   getCharLevels,
   saveCharLevel,
   getRecentChars,
+  getRareChars,
+  addRareChar,
   addCharRecord,
   clearAll,
   removeChar,

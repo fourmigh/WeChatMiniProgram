@@ -1,6 +1,6 @@
 <view class="page">
   <view class="page-head">
-    <view class="page-title">字库</view>
+    <view class="page-title">{{T.title}}</view>
     <view class="page-sub">{{subText}}</view>
   </view>
 
@@ -8,7 +8,7 @@
     <input
       class="search-input"
       value="{{keyword}}"
-      placeholder="输入一个字查找"
+      placeholder="{{T.searchPlaceholder}}"
       maxlength="1"
       bindinput="onSearch"
     />
@@ -16,10 +16,13 @@
       <view
         wx:for="{{scopes}}"
         wx:key="index"
-        class="chip {{scope === item.index ? 'active' : ''}}"
+        class="chip {{scope === item.index ? 'active' : ''}} {{item.index === 'hidden' ? 'rare' : ''}}"
         data-index="{{item.index}}"
         bindtap="onScopeTap"
-      >{{item.name}}</view>
+      >
+        <text>{{item.name}}</text>
+        <text wx:if="{{item.count}}"> {{item.count}}</text>
+      </view>
     </view>
   </view>
 
@@ -39,7 +42,7 @@
           <block wx:for="{{chars}}" wx:key="key">
             <view wx:if="{{item.type === 'divider'}}" class="tier-divider">
               <view class="tier-line"></view>
-              <text class="tier-title">{{item.title}} · {{item.count}} 字</text>
+              <text class="tier-title">{{item.title}} · {{item.count}} {{T.charUnit}}</text>
               <view class="tier-line"></view>
             </view>
             <view
@@ -55,7 +58,7 @@
             </view>
           </block>
         </view>
-        <view class="muted list-more" wx:if="{{hasMore}}">上滑加载更多…</view>
+        <view class="muted list-more" wx:if="{{hasMore}}">{{T.loadMore}}</view>
       </view>
     </scroll-view>
 
@@ -65,6 +68,6 @@
   </view>
 
   <view class="page-footer">
-    <view class="btn ghost" bindtap="goHome">回首页</view>
+    <view class="btn ghost" bindtap="goHome">{{T.home}}</view>
   </view>
 </view>

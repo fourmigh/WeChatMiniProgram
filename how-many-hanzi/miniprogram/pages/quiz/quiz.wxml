@@ -54,7 +54,7 @@
         wx:if="{{multi && !answered}}"
         class="btn submit-btn {{selected.length ? '' : 'disabled'}}"
         bindtap="submitAnswer"
-      >提交答案</view>
+      >{{T.submit}}</view>
       <view class="quiz-pad"></view>
     </view>
   </scroll-view>
@@ -68,7 +68,7 @@
       <view class="feedback-title">{{feedback}}</view>
       <view class="feedback-sub">{{feedbackSub}}</view>
     </view>
-    <view class="feedback-answer">正确答案：{{answerText}}</view>
+    <view class="feedback-answer">{{T.answerPrefix}}{{answerText}}</view>
     <view class="btn panel-btn" bindtap="next">{{nextText}}</view>
   </view>
 </view>

@@ -2,43 +2,41 @@ const chars = require("../../lib/chars");
 const storage = require("../../lib/storage");
 const nav = require("../../lib/nav");
 const levels = require("../../lib/levels");
-const scrollbar = require("../../lib/scrollbar");
+const i18n = require("../../lib/i18n");
+const { definePage } = require("../../lib/page-base");
 
 const BATCH = 200;
 
-Page({
-  data: Object.assign(
-    {
-      scopes: [],
-      scope: 0,
-      scopeName: "",
-      subText: "",
-      keyword: "",
-      pool: [],
-      chars: [],
-      batch: BATCH,
-      hasMore: false,
-      intoView: "",
-      highlightIndex: -1,
-      emptyHint: "",
-    },
-    scrollbar.createState()
-  ),
+definePage({
+  page: "charsList",
+  titleKey: "pages.charsList.title",
+  data: {
+    scopes: [],
+    scope: 0,
+    isHidden: false,
+    scopeName: "",
+    subText: "",
+    keyword: "",
+    pool: [],
+    chars: [],
+    batch: BATCH,
+    hasMore: false,
+    intoView: "",
+    highlightIndex: -1,
+    emptyHint: "",
+  },
 
   onLoad(options) {
-    const raw = Number((options && options.scope) || 0);
-    const scope = Math.min(Math.max(raw, 0), 4);
-    this.setData({ scopes: chars.listScopes() });
+    const rawScope = options && options.scope;
+    const scope =
+      rawScope === "hidden"
+        ? "hidden"
+        : Math.min(Math.max(Number(rawScope) || 0, 0), 4);
+    const scopes = chars.listScopes().concat([
+      { index: "hidden", name: i18n.t("pages.charsList.hiddenName") },
+    ]);
+    this.setData({ scopes: scopes });
     this.loadScope(scope);
-  },
-
-  onReady() {
-    nav.ready();
-    scrollbar.measure(this);
-  },
-
-  onScroll(e) {
-    scrollbar.onScroll(this, e);
   },
 
   onShow() {
@@ -54,35 +52,55 @@ Page({
   },
 
   loadScope(scope) {
-    const pool = chars.getCharsByScope(scope);
-    const info = chars.listScopes()[scope];
+    const isHidden = scope === "hidden";
+    this.isHidden = isHidden;
+
+    let pool;
+    let scopeName;
     let subText;
-    if (scope === 0) {
-      subText = info.name + " · 共 " + info.count + " 字";
-    } else if (scope >= 4) {
-      subText = "全部 · 共 " + chars.allChars.length + " 字";
+    let emptyHint = "";
+    if (isHidden) {
+      pool = storage.getRareChars().map((r) => r.char);
+      scopeName = i18n.t("pages.charsList.hiddenName");
+      subText = i18n.t("pages.charsList.subHidden", { n: pool.length });
+      if (!pool.length) {
+        emptyHint = i18n.t("pages.charsList.subHiddenEmpty");
+      }
     } else {
-      subText =
-        info.name +
-        " · 共 " +
-        info.count +
-        " 字（本档新字 " +
-        chars.getTierChars(scope).length +
-        "）";
+      pool = chars.getCharsByScope(scope);
+      const info = chars.listScopes()[scope];
+      scopeName = info.name;
+      if (scope === 0) {
+        subText = i18n.t("pages.charsList.subTier", {
+          name: info.name,
+          n: info.count,
+        });
+      } else if (scope >= 4) {
+        subText = i18n.t("pages.charsList.subAll", {
+          n: chars.allChars.length,
+        });
+      } else {
+        subText = i18n.t("pages.charsList.subTierNew", {
+          name: info.name,
+          n: info.count,
+          m: chars.getTierChars(scope).length,
+        });
+      }
     }
     this.setData({
       scope: scope,
-      scopeName: info.name,
+      isHidden: isHidden,
+      scopeName: scopeName,
       subText: subText,
       keyword: "",
       pool: pool,
       batch: BATCH,
-      emptyHint: "",
+      emptyHint: emptyHint,
       intoView: "",
     });
     this.renderBatch(() => {
       // 切档后回到顶部
-      this.setData({ intoView: "cell-0" });
+      if (this.data.pool.length) this.setData({ intoView: "cell-0" });
     });
   },
 
@@ -92,7 +110,7 @@ Page({
     const list = [];
 
     let segments = [];
-    if (this.data.scope >= 4) {
+    if (!this.isHidden && this.data.scope >= 4) {
       const order = [4, 3, 2, 1, 0];
       let cursor = 0;
       for (const t of order) {
@@ -146,9 +164,17 @@ Page({
       return;
     }
     const ch = Array.from(kw)[0];
-    const all = chars.getCharsByScope(this.data.scope);
+    const all = this.isHidden
+      ? storage.getRareChars().map((r) => r.char)
+      : chars.getCharsByScope(this.data.scope);
     if (all.indexOf(ch) === -1) {
-      this.setData({ chars: [], hasMore: false, emptyHint: "该字不在本档位" });
+      this.setData({
+        chars: [],
+        hasMore: false,
+        emptyHint: this.isHidden
+          ? i18n.t("pages.charsList.hintNotInHidden")
+          : i18n.t("pages.charsList.hintNotInScope"),
+      });
       return;
     }
     const levelsMap = storage.getCharLevels();
@@ -169,7 +195,8 @@ Page({
   },
 
   onScopeTap(e) {
-    const idx = Number(e.currentTarget.dataset.index);
+    const raw = e.currentTarget.dataset.index;
+    const idx = raw === "hidden" ? "hidden" : Number(raw);
     if (idx === this.data.scope) return;
     this.loadScope(idx);
   },
@@ -214,9 +241,5 @@ Page({
         "&i=" +
         idx
     );
-  },
-
-  goHome() {
-    nav.relaunch("/pages/index/index");
   },
 });

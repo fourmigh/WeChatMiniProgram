@@ -1,7 +1,8 @@
 const storage = require("../../lib/storage");
 const nav = require("../../lib/nav");
-const scrollbar = require("../../lib/scrollbar");
 const levels = require("../../lib/levels");
+const i18n = require("../../lib/i18n");
+const { definePage } = require("../../lib/page-base");
 
 function pad2(n) {
   return n < 10 ? "0" + n : "" + n;
@@ -20,25 +21,27 @@ function dayLabel(key) {
   const y = new Date(now.getTime() - 86400000);
   const yesterday = y.getFullYear() + "-" + pad2(y.getMonth() + 1) + "-" + pad2(y.getDate());
   const parts = key.split("-");
-  const md = parts.length === 3 ? Number(parts[1]) + "月" + Number(parts[2]) + "日" : key;
-  if (key === today) return "今天 · " + md;
-  if (key === yesterday) return "昨天 · " + md;
-  if (!key) return "未知日期";
+  const md =
+    parts.length === 3
+      ? i18n.t("pages.history.monthDay", {
+          m: Number(parts[1]),
+          d: Number(parts[2]),
+        })
+      : key;
+  if (key === today) return i18n.t("pages.history.today", { md: md });
+  if (key === yesterday) return i18n.t("pages.history.yesterday", { md: md });
+  if (!key) return i18n.t("pages.history.unknownDate");
   return md;
 }
 
-Page({
+definePage({
+  page: "history",
+  titleKey: "pages.history.title",
   data: {
     list: [],
     hasData: false,
     days: [],
     hasDays: false,
-  },
-
-  onReady() {
-    nav.ready();
-    this.setData(scrollbar.createState());
-    scrollbar.measure(this);
   },
 
   onShow() {
@@ -52,7 +55,7 @@ Page({
         avgText: levels.avgText(avg),
         avgMark: levels.markOf(Math.min(Math.round(avg), 6)),
         avgLevelRound: Math.min(Math.round(avg), 6),
-        avgValue: "等 " + avg.toFixed(1),
+        avgValue: i18n.t("common.levelValue", { value: avg.toFixed(1) }),
       });
     });
     const recent = storage.getRecentChars();
@@ -82,7 +85,7 @@ Page({
     const ch = e.currentTarget.dataset.char;
     nav.go(
       "/pages/quiz/quiz?mode=single&char=" + encodeURIComponent(ch) + "&scope=4",
-      "正在准备题目"
+      i18n.t("common.navPreparing")
     );
   },
 
@@ -90,16 +93,12 @@ Page({
     nav.go("/pages/chars/chars");
   },
 
-  goHome() {
-    nav.relaunch("/pages/index/index");
-  },
-
   deleteRecord(e) {
     const idx = Number(e.currentTarget.dataset.index);
     const self = this;
     wx.showModal({
-      title: "删除记录",
-      content: "确定删除这条自测记录吗？（不影响已测字库）",
+      title: i18n.t("pages.history.modalDeleteTitle"),
+      content: i18n.t("pages.history.modalDeleteContent"),
       success(res) {
         if (res.confirm) {
           storage.removeHistoryAt(idx);
@@ -112,8 +111,8 @@ Page({
   clearAll() {
     const self = this;
     wx.showModal({
-      title: "清空全部",
-      content: "将清空自测历史、最近测过的字与全部字库记录，确定吗？",
+      title: i18n.t("pages.history.modalClearTitle"),
+      content: i18n.t("pages.history.modalClearContent"),
       success(res) {
         if (res.confirm) {
           storage.clearAll();
@@ -121,9 +120,5 @@ Page({
         }
       },
     });
-  },
-
-  onScroll(e) {
-    scrollbar.onScroll(this, e);
   },
 });

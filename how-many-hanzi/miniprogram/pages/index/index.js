@@ -1,12 +1,16 @@
 const chars = require("../../lib/chars");
 const storage = require("../../lib/storage");
 const nav = require("../../lib/nav");
-const scrollbar = require("../../lib/scrollbar");
 const levels = require("../../lib/levels");
 const progress = require("../../lib/progress");
-const { pickOne } = require("../../lib/utils");
+const { definePage } = require("../../lib/page-base");
+const i18n = require("../../lib/i18n");
+const { pickOne, isHanChar } = require("../../lib/utils");
 
-Page({
+definePage({
+  page: "index",
+  titleKey: "pages.index.title",
+  home: false,
   data: {
     scopes: [],
     scopeIndex: 4,
@@ -18,12 +22,7 @@ Page({
     polyOnly: false,
     currentRank: "",
     currentMastery: 0,
-  },
-
-  onReady() {
-    nav.ready();
-    this.setData(scrollbar.createState());
-    scrollbar.measure(this);
+    subtitle: "",
   },
 
   onLoad() {
@@ -34,6 +33,7 @@ Page({
       scopeIndex: settings.scope,
       sampleSize: settings.sampleSize,
       totalChars: chars.allChars.length,
+      subtitle: i18n.t("pages.index.subtitle", { n: chars.allChars.length }),
     });
     this.refreshProgress();
     this.refreshLast();
@@ -65,7 +65,9 @@ Page({
             avgMark: levels.markOf(
               Math.min(Math.round(Number(last.avgLevel) || 0), 6)
             ),
-            avgValue: "等 " + (Number(last.avgLevel) || 0).toFixed(1),
+            avgValue: i18n.t("common.levelValue", {
+              value: (Number(last.avgLevel) || 0).toFixed(1),
+            }),
             avgLevelRound: Math.min(Math.round(Number(last.avgLevel) || 0), 6),
           })
         : null,
@@ -97,7 +99,10 @@ Page({
     if (this.data.polyOnly) {
       const poly = chars.getPolyChars(pool);
       if (!poly.length) {
-        wx.showToast({ title: "该档位没有多音字", icon: "none" });
+        wx.showToast({
+        title: i18n.t("pages.index.toastNoPoly"),
+        icon: "none",
+      });
         return;
       }
       this.setData({ charInput: pickOne(poly) });
@@ -107,13 +112,31 @@ Page({
   },
 
   startSingle() {
-    let ch = (this.data.charInput || "").trim();
-    if (!ch) {
-      ch = pickOne(chars.getCharsByScope(this.data.scopeIndex));
-      this.setData({ charInput: ch });
+    const ch = (this.data.charInput || "").trim();
+    if (!isHanChar(ch)) {
+      wx.showToast({ title: i18n.t("pages.index.toastNeedChar"), icon: "none" });
+      return;
     }
-    if (Array.from(ch).length !== 1) {
-      wx.showToast({ title: "请输入一个汉字", icon: "none" });
+    if (chars.getTierOf(ch) < 0) {
+      const added = storage.addRareChar(ch);
+      if (!added) {
+        wx.showToast({
+          title: i18n.t("pages.index.toastAlreadyCollected"),
+          icon: "none",
+        });
+        return;
+      }
+      wx.showModal({
+        title: i18n.t("pages.index.modalRareTitle"),
+        content: i18n.t("pages.index.modalRareContent", { char: ch }),
+        confirmText: i18n.t("pages.index.modalRareConfirm"),
+        cancelText: i18n.t("pages.index.modalRareCancel"),
+        success(res) {
+          if (res.confirm) {
+            nav.go("/pages/chars-list/chars-list?scope=hidden");
+          }
+        },
+      });
       return;
     }
     nav.go(
@@ -121,7 +144,7 @@ Page({
         encodeURIComponent(ch) +
         "&scope=" +
         this.data.scopeIndex,
-      "正在准备题目"
+      i18n.t("common.navPreparing")
     );
   },
 
@@ -131,7 +154,7 @@ Page({
         this.data.scopeIndex +
         "&size=" +
         this.data.sampleSize,
-      "正在抽题"
+      i18n.t("common.navSampling")
     );
   },
 
@@ -149,9 +172,5 @@ Page({
 
   goChars() {
     nav.go("/pages/chars/chars");
-  },
-
-  onScroll(e) {
-    scrollbar.onScroll(this, e);
   },
 });

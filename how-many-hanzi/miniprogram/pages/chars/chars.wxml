@@ -1,7 +1,7 @@
 <view class="page">
   <view class="page-head">
-    <view class="page-title">我的字库</view>
-    <view class="page-sub">{{count}} 个字的最高等级记录</view>
+    <view class="page-title">{{T.title}}</view>
+    <view class="page-sub">{{subtitle}}</view>
   </view>
 
   <view class="stats-fixed" wx:if="{{hasData}}">
@@ -9,23 +9,23 @@
       <view class="row between">
         <view>
           <view class="stat-num">{{count}}</view>
-          <view class="muted">已测过的字（记录最高等级）</view>
+          <view class="muted">{{T.testedLabel}}</view>
         </view>
         <view class="card-actions">
-          <view class="action-link {{manage ? 'active' : ''}}" bindtap="toggleManage">{{manage ? '完成' : '管理'}}</view>
-          <view class="action-link warn" bindtap="clearChars">清空</view>
+          <view class="action-link {{manage ? 'active' : ''}}" bindtap="toggleManage">{{manage ? T.done : T.manage}}</view>
+          <view class="action-link warn" bindtap="clearChars">{{T.clear}}</view>
         </view>
       </view>
       <view class="dist-list">
         <view class="progress-row">
-          <view class="progress-label">覆盖</view>
+          <view class="progress-label">{{T.coverage}}</view>
           <view class="progress-track">
             <view class="progress-fill cov" style="width: {{coverage}}%"></view>
           </view>
           <view class="progress-text">{{count}} / {{totalChars}} · {{coverage}}%</view>
         </view>
         <view class="progress-row">
-          <view class="progress-label">掌握</view>
+          <view class="progress-label">{{T.mastery}}</view>
           <view class="progress-track">
             <view class="progress-fill mas" style="width: {{mastery}}%"></view>
           </view>
@@ -33,7 +33,7 @@
         </view>
         <view class="rank-line">
           <text class="lv-rank">{{rank}}</text>
-          <text class="rank-sub">当前功名</text>
+          <text class="rank-sub">{{T.currentRank}}</text>
         </view>
         <view class="dist-row" wx:for="{{dist}}" wx:key="level" wx:if="{{item.count > 0}}">
           <view class="dist-label">
@@ -44,6 +44,19 @@
           </view>
           <view class="dist-count">{{item.count}}</view>
         </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="rare-fixed">
+    <view class="card rare-card" bindtap="goRare">
+      <view class="rare-entry-left">
+        <text class="rare-entry-title">{{T.hidden}}</text>
+        <text class="rare-entry-sub">{{T.hiddenSub}}</text>
+      </view>
+      <view class="rare-entry-right">
+        <text class="rare-entry-count">{{rareCount}} {{T.charUnit}}</text>
+        <text class="rare-entry-arrow">›</text>
       </view>
     </view>
   </view>
@@ -73,12 +86,13 @@
           </view>
         </view>
 
-        <view class="muted chars-tip">点击任意字重新测级；点「管理」可删除单个字。</view>
+        <view class="muted chars-tip">{{T.tip}}</view>
       </block>
 
       <view class="empty" wx:else>
-        <view class="empty-title">还没有测过字</view>
-        <view class="muted">回到首页测一个字，或做一次整体自测。</view>
+        <view class="empty-title">{{T.emptyTitle}}</view>
+        <view class="muted">{{T.emptyDesc}}</view>
+        <view class="muted" wx:if="{{rareCount}}">{{emptyRare}}</view>
       </view>
     </view>
   </scroll-view>
@@ -88,6 +102,6 @@
   </view>
 
   <view class="page-footer">
-    <view class="btn ghost" bindtap="goHome">回首页</view>
+    <view class="btn ghost" bindtap="goHome">{{T.home}}</view>
   </view>
 </view>

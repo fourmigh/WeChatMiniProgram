@@ -100,14 +100,6 @@ function pickFormSimilar(ch, count, pool) {
   if (out.length < count) {
     out = out.concat(pickN(unique(nearStroke).filter((c) => out.indexOf(c) === -1), count - out.length));
   }
-  if (out.length < count) {
-    out = out.concat(
-      pickN(
-        pool.filter((c) => c !== ch && out.indexOf(c) === -1),
-        count - out.length
-      )
-    );
-  }
   return out.slice(0, count);
 }
 

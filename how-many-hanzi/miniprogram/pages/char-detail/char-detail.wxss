@@ -63,6 +63,18 @@
   color: #55636b;
 }
 
+.tier-tag.rare {
+  background: #fbeeea;
+  color: #c8553d;
+  font-weight: 600;
+}
+
+.rare-date {
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: #a29a8e;
+}
+
 .chip-line {
   display: flex;
   flex-wrap: wrap;
@@ -159,4 +171,64 @@
 .stroke-name {
   font-size: 24rpx;
   color: #22333b;
+}
+
+.stroke-stage {
+  margin-top: var(--sp-2xs);
+}
+
+.stroke-canvas {
+  display: block;
+  width: 100%;
+}
+
+.stroke-legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: var(--sp-sm);
+  font-size: 22rpx;
+  color: #7a858c;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin: 0 var(--sp-sm);
+}
+
+.legend-dot {
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: 50%;
+  margin-right: 8rpx;
+}
+
+.legend-dot.done {
+  background: #22333b;
+}
+
+.legend-dot.current {
+  background: #c8553d;
+}
+
+.legend-dot.pending {
+  background: #e7dfd1;
+  border: 1rpx solid #ded5c6;
+}
+
+.stroke-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: var(--sp-md) 0;
+  font-size: 24rpx;
+  color: #7a858c;
+}
+
+.stroke-retry {
+  margin-left: var(--sp-sm);
+  color: #c8553d;
+  font-weight: 600;
 }

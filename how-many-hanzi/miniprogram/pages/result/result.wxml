@@ -16,7 +16,7 @@
         </view>
 
         <view class="card" wx:if="{{logRows.length}}">
-          <view class="section-title">逐级记录</view>
+          <view class="section-title">{{T.logTitle}}</view>
           <view class="log-grid">
             <view class="log-item {{item.ok ? 'ok' : 'bad'}}" wx:for="{{logRows}}" wx:key="key">
               <text class="lv-mark sm lv{{item.level}}">{{item.mark}}</text>
@@ -33,7 +33,7 @@
             <view>
               <view class="muted">{{result.scopeName}} · {{desc}}</view>
               <view class="avg">{{result.avgLevelText}}</view>
-              <view class="muted">平均识字等级</view>
+              <view class="muted">{{T.avgLabel}}</view>
             </view>
             <view class="mastery">
               <view class="mastery-num">{{result.mastery}}%</view>
@@ -46,21 +46,21 @@
           <view class="row between">
             <view class="stat">
               <view class="stat-num">{{result.estimated}}</view>
-              <view class="muted">估算认识字数</view>
+              <view class="muted">{{T.estimated}}</view>
             </view>
             <view class="stat">
               <view class="stat-num">{{result.scopeTotal}}</view>
-              <view class="muted">本档总字数</view>
+              <view class="muted">{{T.scopeTotal}}</view>
             </view>
             <view class="stat">
               <view class="stat-num">{{result.count}}</view>
-              <view class="muted">抽样字数</view>
+              <view class="muted">{{T.sampled}}</view>
             </view>
           </view>
         </view>
 
         <view class="card">
-          <view class="section-title">等级分布</view>
+          <view class="section-title">{{T.distTitle}}</view>
           <view class="bar-grid">
             <view class="bar-item" wx:for="{{bars}}" wx:key="level">
               <view class="bar-top">
@@ -79,8 +79,8 @@
       </block>
 
       <view class="btn-row">
-        <view class="btn" bindtap="again">再测一次</view>
-        <view class="btn ghost" wx:if="{{mode === 'test'}}" bindtap="goHistory">查看历史</view>
+        <view class="btn" bindtap="again">{{T.again}}</view>
+        <view class="btn ghost" wx:if="{{mode === 'test'}}" bindtap="goHistory">{{T.viewHistory}}</view>
       </view>
     </view>
   </scroll-view>
@@ -90,6 +90,6 @@
   </view>
 
   <view class="page-footer">
-    <view class="btn ghost" bindtap="goHome">回首页</view>
+    <view class="btn ghost" bindtap="goHome">{{T.home}}</view>
   </view>
 </view>

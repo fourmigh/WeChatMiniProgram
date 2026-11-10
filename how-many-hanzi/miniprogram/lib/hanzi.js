@@ -12,14 +12,23 @@ function getPrimaryReading(ch) {
   return chars.getPrimaryReading(ch);
 }
 
+function cleanNames(list) {
+  const arr = Array.isArray(list) ? list : [list];
+  return arr
+    .map((n) => (n == null ? "" : String(n)).trim())
+    .filter(
+      (n) => n && n !== "null" && n !== "undefined" && n !== "[object Object]"
+    );
+}
+
 function getStrokeNames(ch) {
   const extra = chars.getExtraStrokeNames(ch);
-  if (extra && extra.length) return extra.slice();
+  if (extra && extra.length) return cleanNames(extra);
   try {
     const arr = cnchar.stroke(ch, "order", "name");
     if (!arr || !arr.length) return [];
     const first = arr[0];
-    return Array.isArray(first) ? first.slice() : [first];
+    return cleanNames(Array.isArray(first) ? first : [first]);
   } catch (e) {
     return [];
   }

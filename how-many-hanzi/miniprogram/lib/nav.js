@@ -1,50 +1,60 @@
-let hideTimer = null;
-let shown = false;
-const SAFETY_TIMEOUT = 5000;
+let locked = false;
 
-function show(title) {
-  wx.showLoading({ title: title || "加载中", mask: true });
-  shown = true;
-  clearTimeout(hideTimer);
-  hideTimer = setTimeout(hide, SAFETY_TIMEOUT);
-}
-
-function hide() {
-  clearTimeout(hideTimer);
-  hideTimer = null;
-  if (!shown) return;
-  shown = false;
-  wx.hideLoading();
-}
-
-function go(url, title) {
-  show(title);
+function go(url) {
+  if (locked) return;
+  locked = true;
   wx.navigateTo({
     url: url,
+    complete() {
+      locked = false;
+    },
     fail(err) {
       console.warn("[nav] navigateTo failed:", err && err.errMsg);
-      hide();
     },
   });
 }
 
-function relaunch(url, title) {
-  show(title);
+function relaunch(url) {
+  const pages =
+    typeof getCurrentPages === "function" ? getCurrentPages() : [];
+  let homeIdx = -1;
+  for (let i = 0; i < pages.length; i++) {
+    if (pages[i] && pages[i].route === "pages/index/index") {
+      homeIdx = i;
+      break;
+    }
+  }
+  if (homeIdx > -1) {
+    wx.navigateBack({
+      delta: Math.max(1, pages.length - 1 - homeIdx),
+      fail(err) {
+        console.warn("[nav] navigateBack failed:", err && err.errMsg);
+      },
+    });
+    return;
+  }
   wx.reLaunch({
     url: url,
     fail(err) {
       console.warn("[nav] reLaunch failed:", err && err.errMsg);
-      hide();
     },
   });
 }
 
+// 兜底：清除当前页可能残留的导航栏 loading（跳转时不再主动显示）。
+function reset() {
+  if (typeof wx !== "undefined" && wx.hideNavigationBarLoading) {
+    wx.hideNavigationBarLoading();
+  }
+}
+
 function ready() {
-  hide();
+  reset();
 }
 
 module.exports = {
   go,
   relaunch,
   ready,
+  reset,
 };

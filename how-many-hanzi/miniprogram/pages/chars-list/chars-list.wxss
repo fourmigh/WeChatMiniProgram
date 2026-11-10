@@ -18,6 +18,16 @@
   margin-bottom: var(--sp-sm);
 }
 
+.chip.rare {
+  color: #c8553d;
+  background: #fbeeea;
+}
+
+.chip.rare.active {
+  background: #c8553d;
+  color: #ffffff;
+}
+
 .list-hint {
   text-align: center;
   padding: 60rpx 0;

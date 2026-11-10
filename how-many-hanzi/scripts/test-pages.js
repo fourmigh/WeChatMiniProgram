@@ -3,9 +3,11 @@ const path = require("path");
 const store = {};
 let app = { globalData: {} };
 let lastNav = null;
+let lastBack = null;
 let loadCounts = { show: 0, hide: 0 };
 
 global.getApp = () => app;
+global.getCurrentPages = () => [];
 global.wx = {
   getStorageSync: (k) => (k in store ? store[k] : ""),
   setStorageSync: (k, v) => {
@@ -14,20 +16,26 @@ global.wx = {
   navigateTo: (o) => {
     lastNav = o.url;
     if (o.success) o.success();
+    if (o.complete) o.complete();
   },
   redirectTo: (o) => {
     lastNav = o.url;
     if (o.success) o.success();
+    if (o.complete) o.complete();
   },
   reLaunch: (o) => {
     lastNav = o.url;
     if (o.success) o.success();
   },
-  showLoading: () => {
+  showNavigationBarLoading: () => {
     loadCounts.show++;
   },
-  hideLoading: () => {
+  hideNavigationBarLoading: () => {
     loadCounts.hide++;
+  },
+  navigateBack: (o) => {
+    lastBack = (o && o.delta) || 1;
+    if (o && o.complete) o.complete();
   },
   showToast: () => {},
   showModal: (o) => {
@@ -105,12 +113,16 @@ loadCounts.hide = 0;
 index.startSingle();
 check("index single nav", lastNav && lastNav.indexOf("mode=single") > -1, lastNav);
 check(
-  "index single loading shown, kept until onReady",
-  loadCounts.show === 1 && loadCounts.hide === 0,
-  "show=" + loadCounts.show + " hide=" + loadCounts.hide
+  "index single nav no bar loading",
+  loadCounts.show === 0,
+  "show=" + loadCounts.show
 );
 pageOnReady(index);
-check("index loading closed after onReady", loadCounts.hide === 1, "hide=" + loadCounts.hide);
+check(
+  "index onReady clears bar loading",
+  loadCounts.hide >= 1,
+  "hide=" + loadCounts.hide
+);
 
 lastNav = null;
 loadCounts.show = 0;
@@ -119,12 +131,16 @@ index.setData({ scopeIndex: 4, sampleSize: 3 });
 index.startTest();
 check("index test nav", lastNav && lastNav.indexOf("mode=test") > -1, lastNav);
 check(
-  "index test loading shown, kept until onReady",
-  loadCounts.show === 1 && loadCounts.hide === 0,
-  "show=" + loadCounts.show + " hide=" + loadCounts.hide
+  "index test nav no bar loading",
+  loadCounts.show === 0,
+  "show=" + loadCounts.show
 );
 pageOnReady(index);
-check("index test loading closed after onReady", loadCounts.hide === 1, "hide=" + loadCounts.hide);
+check(
+  "index test onReady clears bar loading",
+  loadCounts.hide >= 1,
+  "hide=" + loadCounts.hide
+);
 
 function runQuiz(options, label) {
   lastNav = null;
@@ -200,6 +216,52 @@ check(
   JSON.stringify(intro.data.levels.map((x) => x.mark))
 );
 
+const hanziLib = require(path.join(__dirname, "..", "miniprogram", "lib", "hanzi.js"));
+check("hanzi strokes for lib char", hanziLib.getStrokeNames("好").length > 0);
+check(
+  "hanzi strokes empty for rare char",
+  hanziLib.getStrokeNames("峠").length === 0 && hanziLib.getStrokeNames("𠀀").length === 0,
+  "峠=" + hanziLib.getStrokeNames("峠").length + " 𠀀=" + hanziLib.getStrokeNames("𠀀").length
+);
+const i18nLib = require(path.join(__dirname, "..", "miniprogram", "lib", "i18n.js"));
+check(
+  "i18n template params",
+  i18nLib.t("pages.charsList.subHidden", { n: 3 }) === "隐藏 · 已收集 3 字",
+  i18nLib.t("pages.charsList.subHidden", { n: 3 })
+);
+check(
+  "i18n page text merges common",
+  i18nLib.pageText("index").home === "回首页" &&
+    i18nLib.pageText("index").title === "我到底认识几个汉字",
+  JSON.stringify(Object.keys(i18nLib.pageText("index")).slice(0, 4))
+);
+check(
+  "page data injects T",
+  index.data.T && index.data.T.startSingle === "开始测这个字",
+  index.data.T ? index.data.T.startSingle : "missing"
+);
+const pinyinLib = require(path.join(__dirname, "..", "miniprogram", "lib", "pinyin.js"));
+check(
+  "pinyin for rare char",
+  JSON.stringify(pinyinLib.getPinyin("囍")) === JSON.stringify(["xǐ"]) &&
+    JSON.stringify(pinyinLib.getPinyin("峠")) === JSON.stringify(["qiǎ"]),
+  JSON.stringify(pinyinLib.getPinyin("囍"))
+);
+check(
+  "pinyin for ext-B char",
+  JSON.stringify(pinyinLib.getPinyin("𠀀")) === JSON.stringify(["hē"]),
+  JSON.stringify(pinyinLib.getPinyin("𠀀"))
+);
+check(
+  "pinyin skips lib char and non-hanzi",
+  pinyinLib.getPinyin("好").length === 0 && pinyinLib.getPinyin("A").length === 0
+);
+check(
+  "pinyin polyphonic rare char",
+  JSON.stringify(pinyinLib.getPinyin("㐷")) ===
+    JSON.stringify(["mǎ", "mà", "mián"]),
+  JSON.stringify(pinyinLib.getPinyin("㐷"))
+);
 const levelsLib = require(path.join(__dirname, "..", "miniprogram", "lib", "levels.js"));
 const progressLib = require(path.join(__dirname, "..", "miniprogram", "lib", "progress.js"));
 function fakeLevels(n, lv) {
@@ -516,6 +578,16 @@ lastNav = null;
 resultPage.goHome();
 check("result go home nav", lastNav === "/pages/index/index", lastNav);
 
+lastBack = null;
+global.getCurrentPages = () => [
+  { route: "pages/index/index" },
+  { route: "pages/chars/chars" },
+  { route: "pages/result/result" },
+];
+resultPage.goHome();
+check("result go home via navigateBack", lastBack === 2, "delta=" + lastBack);
+global.getCurrentPages = () => [];
+
 // —— 等级体系迁移（旧 8 级 -> 新 6 级）——
 const storageLib = require(path.join(__dirname, "..", "miniprogram", "lib", "storage.js"));
 global.wx.setStorageSync("hmh:schemaVersion", 1);
@@ -546,6 +618,167 @@ check(
 );
 check("migrate idempotent", storageLib.migrate() === false);
 
+// —— 隐藏款（库外字收藏）——
+storageLib.clearAll();
+const addedFirst = storageLib.addRareChar("峠");
+const addedAgain = storageLib.addRareChar("峠");
+check("rare add & dedupe", addedFirst === true && addedAgain === false);
+storageLib.addRareChar("𠀀");
+const rares = storageLib.getRareChars();
+check(
+  "rare order newest first",
+  rares.length === 2 &&
+    rares[0].char === "𠀀" &&
+    rares[1].char === "峠" &&
+    !!rares[0].dateText,
+  JSON.stringify(rares.map((r) => r.char))
+);
+storageLib.clearAll();
+check("rare survives clearAll", storageLib.getRareChars().length === 2);
+const charsRareEmpty = loadPage("chars/chars.js");
+charsRareEmpty.onShow();
+check(
+  "chars rare entry visible with no chars",
+  charsRareEmpty.data.hasData === false && charsRareEmpty.data.rareCount === 2,
+  "hasData=" + charsRareEmpty.data.hasData + " rare=" + charsRareEmpty.data.rareCount
+);
+
+const hiddenList = loadPage("chars-list/chars-list.js", { scope: "hidden" });
+check(
+  "hidden list page",
+  hiddenList.data.scope === "hidden" &&
+    hiddenList.data.isHidden === true &&
+    hiddenList.data.pool.length === 2 &&
+    hiddenList.data.chars.length === 2,
+  JSON.stringify({
+    scope: hiddenList.data.scope,
+    pool: hiddenList.data.pool.length,
+    chars: hiddenList.data.chars.length,
+  })
+);
+check(
+  "hidden subtitle",
+  hiddenList.data.subText === "隐藏 · 已收集 2 字",
+  hiddenList.data.subText
+);
+
+const hiddenDetail = loadPage("char-detail/char-detail.js", {
+  char: encodeURIComponent("峠"),
+  scope: "hidden",
+  i: "1",
+});
+check(
+  "hidden detail page",
+  hiddenDetail.data.isHidden === true &&
+    hiddenDetail.data.char === "峠" &&
+    hiddenDetail.data.rareDate.length > 0 &&
+    hiddenDetail.data.readings.length > 0 &&
+    hiddenDetail.data.tierName === "",
+  JSON.stringify({
+    hidden: hiddenDetail.data.isHidden,
+    rareDate: hiddenDetail.data.rareDate,
+    tier: hiddenDetail.data.tierName,
+  })
+);
+check(
+  "hidden detail pinyin filled",
+  JSON.stringify(hiddenDetail.data.readings) === JSON.stringify(["qiǎ"]),
+  JSON.stringify(hiddenDetail.data.readings)
+);
+check(
+  "hidden detail no stroke card",
+  hiddenDetail.data.strokeNames.length === 0,
+  "strokes=" + hiddenDetail.data.strokeNames.length
+);
+const quizRare = loadPage("quiz/quiz.js", {
+  mode: "single",
+  char: encodeURIComponent("峠"),
+  scope: "4",
+});
+check(
+  "quiz blocks out-of-library char",
+  quizRare.data.char === "" &&
+    storageLib.getCharLevels()["峠"] === undefined,
+  "char=" + quizRare.data.char
+);
+
+lastNav = null;
+index.setData({ charInput: "峠" });
+index.startSingle();
+check("index rare already-collected no nav", lastNav === null);
+check(
+  "index rare keeps input after collect",
+  index.data.charInput === "峠",
+  "input=" + index.data.charInput
+);
+lastNav = null;
+index.setData({ charInput: "A" });
+index.startSingle();
+check(
+  "index rejects non-hanzi input",
+  lastNav === null &&
+    !storageLib.getRareChars().some((r) => r.char === "A"),
+  "nav=" + lastNav
+);
+lastNav = null;
+index.setData({ charInput: "" });
+index.startSingle();
+check("index empty input no random test", lastNav === null, "nav=" + lastNav);
+index.setData({ charInput: "龘" });
+index.startSingle();
+check(
+  "index rare collected and guided",
+  lastNav === "/pages/chars-list/chars-list?scope=hidden" &&
+    storageLib.getRareChars().some((r) => r.char === "龘"),
+  JSON.stringify({
+    nav: lastNav,
+    rares: storageLib.getRareChars().map((r) => r.char),
+  })
+);
+
+storageLib.saveCharLevel("峠", 0);
+const charsRare = loadPage("chars/chars.js");
+charsRare.onShow();
+check(
+  "chars rare entry count",
+  charsRare.data.rareCount === 3,
+  "rareCount=" + charsRare.data.rareCount
+);
+check(
+  "chars filters out-of-library records",
+  charsRare.data.groups.every((g) =>
+    g.chars.every((c) => c.char !== "峠")
+  ),
+  "count=" + charsRare.data.count
+);
+lastNav = null;
+charsRare.goRare();
+check(
+  "chars go rare nav",
+  lastNav === "/pages/chars-list/chars-list?scope=hidden",
+  lastNav
+);
+
+// —— L1 收紧（无部首/笔画的字跳过 L1）——
+const quizLib2 = require(path.join(__dirname, "..", "miniprogram", "lib", "quiz.js"));
+const charsLib2 = require(path.join(__dirname, "..", "miniprogram", "lib", "chars.js"));
+const poolAll = charsLib2.getCharsByScope(4);
+check("L1 still works for normal char", !!quizLib2.buildQuestion("好", 1, poolAll));
+check(
+  "L1 skipped for char without form data",
+  quizLib2.buildQuestion("峠", 1, poolAll) === null
+);
+
+// 导航栏 loading：页面隐藏时清理，避免返回后残留转圈
+const navLibForReset = require(path.join(__dirname, "..", "miniprogram", "lib", "nav.js"));
+navLibForReset.go("/pages/intro/intro");
+const hideBeforeReset = loadCounts.hide;
+index.onHide();
+check(
+  "page hide resets nav loading",
+  loadCounts.hide === hideBeforeReset + 1,
+  "hide=" + loadCounts.hide
+);
 console.log(results.join("\n"));
 const failed = results.filter((r) => r.indexOf("FAIL") === 0);
 console.log("\n" + (results.length - failed.length) + "/" + results.length + " passed");
