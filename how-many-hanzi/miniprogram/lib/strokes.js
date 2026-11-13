@@ -9,6 +9,44 @@ const CACHE_PREFIX = "hmh:stroke:";
 const CACHE_INDEX = "hmh:stroke:index";
 const MAX_CACHE = 400;
 
+// 数据源（MakeMeAHanzi）个别字的笔画顺序与《通用规范汉字笔顺规范》
+// （GF 0023—2020）不一致。这里按索引重排笔画与中线：
+// 值 = 修正后第 i 笔对应原数据的第几笔（0 起）。
+// 每条都经过轮廓比对确认：该位置的数据笔形与规范笔名不符（如规范要求竖，数据是横）。
+const STROKE_ORDER_FIXES = {
+  // 肠：规范第 5 笔是横折折折钩（3 5 1 1 5 3 3），数据把第一撇排到了折笔前面
+  肠: [0, 1, 2, 3, 5, 4, 6],
+  // 盖：王部规范是「横横竖横」，数据写成「横横横竖」，第 5、6 笔颠倒
+  盖: [0, 1, 2, 3, 5, 4, 6, 7, 8, 9, 10],
+  // 苒：冉部规范是「竖横折钩竖横横」，数据第 6、7 笔（竖/横）颠倒
+  苒: [0, 1, 2, 3, 4, 6, 5, 7],
+  // 冉：规范是「竖横折钩竖横横」，数据第 3、4 笔（竖/横）颠倒
+  冉: [0, 1, 3, 2, 4],
+  // 谑：规范第 10 笔是竖弯、第 11 笔是横，数据颠倒
+  谑: [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 9],
+  // 虐：规范第 8 笔是竖弯、第 9 笔是横，数据颠倒
+  虐: [0, 1, 2, 3, 4, 5, 6, 8, 7],
+  // 陧：规范第 7 笔是横、第 8 笔是竖，数据颠倒
+  陧: [0, 1, 2, 3, 4, 5, 7, 6, 8],
+  // 锺：规范第 12 笔是横、第 13 笔是竖，数据颠倒
+  锺: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 11, 13],
+  // 鞲：规范第 17 笔是竖、第 18 笔是横，数据颠倒
+  鞲: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17, 16, 18],
+  // 聃：规范第 9 笔是竖、第 10 笔是横，数据颠倒
+  聃: [0, 1, 2, 3, 4, 5, 6, 7, 9, 8, 10],
+};
+
+// 应用笔顺修正：重排 strokes 与 medians（两者一一对应），不改缓存里的原始数据。
+function applyOrderFix(ch, data) {
+  const order = STROKE_ORDER_FIXES[ch];
+  if (!order || !data || !Array.isArray(data.strokes)) return data;
+  if (data.strokes.length !== order.length) return data;
+  const strokesList = order.map((i) => data.strokes[i]);
+  const source = Array.isArray(data.medians) ? data.medians : [];
+  const medians = order.map((i) => source[i] || []);
+  return { strokes: strokesList, medians: medians };
+}
+
 const DESIGN_W = 622; // rpx，详情页卡片内容宽度
 const COLS = 4;
 const GAP = 12; // rpx
@@ -143,14 +181,14 @@ function requestData(ch) {
 
 function load(ch) {
   const cached = getCached(ch);
-  if (cached) return Promise.resolve(cached);
+  if (cached) return Promise.resolve(applyOrderFix(ch, cached));
   if (pendingRequests[ch]) return pendingRequests[ch];
 
   const p = requestData(ch).then(
     (data) => {
       delete pendingRequests[ch];
       putCache(ch, data);
-      return data;
+      return applyOrderFix(ch, data);
     },
     (err) => {
       delete pendingRequests[ch];
@@ -633,6 +671,8 @@ module.exports = {
   CACHE_PREFIX,
   CACHE_INDEX,
   MAX_CACHE,
+  STROKE_ORDER_FIXES,
+  applyOrderFix,
   DESIGN_W,
   COLS,
   COLORS,

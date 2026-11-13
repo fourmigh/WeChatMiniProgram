@@ -336,6 +336,18 @@ const store = {};
 let requestCount = 0;
 let mode = "ok";
 let lastUrl = "";
+let response = FIXTURE;
+
+// 7 笔的假数据：用来验证「肠」的笔顺修正会同时重排 strokes 与 medians
+const SEVEN = {
+  strokes: Array.from({ length: 7 }, function (_, i) {
+    const x = i * 10;
+    return "M " + x + " 100 L " + (x + 5) + " 100 L " + (x + 5) + " 110 L " + x + " 110 Z";
+  }),
+  medians: Array.from({ length: 7 }, function (_, i) {
+    return [[i * 10, 105], [i * 10 + 5, 105]];
+  }),
+};
 
 global.wx = {
   getStorageSync: (k) => (k in store ? store[k] : ""),
@@ -356,9 +368,44 @@ global.wx = {
       opts.fail({ errMsg: "network down" });
       return;
     }
-    opts.success({ statusCode: 200, data: FIXTURE });
+    opts.success({ statusCode: 200, data: response });
   },
 };
+
+// ---------- 笔顺修正表 ----------
+check("stroke order fix swaps wrong pair", () => {
+  const fixed = strokes.applyOrderFix("肠", SEVEN);
+  const order = [0, 1, 2, 3, 5, 4, 6];
+  assert.deepStrictEqual(fixed.strokes, order.map((i) => SEVEN.strokes[i]));
+  assert.deepStrictEqual(
+    fixed.medians.map((m) => m[0][0]),
+    order.map((i) => i * 10)
+  );
+  assert.strictEqual(SEVEN.strokes[4], fixed.strokes[5], "raw data untouched");
+});
+
+check("stroke order fix ignores other chars", () => {
+  assert.strictEqual(strokes.applyOrderFix("好", SEVEN), SEVEN);
+});
+
+check("stroke order fix ignores unexpected stroke count", () => {
+  const two = { strokes: FIXTURE.strokes, medians: FIXTURE.medians };
+  assert.strictEqual(strokes.applyOrderFix("肠", two), two);
+});
+
+check("stroke order fixes are valid permutations", () => {
+  const fixes = strokes.STROKE_ORDER_FIXES;
+  for (const ch of Object.keys(fixes)) {
+    const order = fixes[ch];
+    const sorted = order.slice().sort((a, b) => a - b);
+    assert.deepStrictEqual(
+      sorted,
+      order.map((_, i) => i),
+      ch + " 的修正表必须是 0..n-1 的排列"
+    );
+  }
+  assert.ok(Object.keys(fixes).length >= 1);
+});
 
 async function runAsync() {
   requestCount = 0;
@@ -376,6 +423,26 @@ async function runAsync() {
     assert.ok(store[strokes.CACHE_PREFIX + "丁"], "cache written");
     assert.deepStrictEqual(store[strokes.CACHE_INDEX], ["丁"]);
   });
+
+  // 「肠」：网络数据与缓存数据都要按修正表重排
+  response = SEVEN;
+  const chang = await strokes.load("肠");
+  check("load applies stroke order fix", () => {
+    assert.strictEqual(chang.strokes[4], SEVEN.strokes[5]);
+    assert.strictEqual(chang.strokes[5], SEVEN.strokes[4]);
+    assert.deepStrictEqual(chang.medians[4], SEVEN.medians[5]);
+    assert.deepStrictEqual(
+      store[strokes.CACHE_PREFIX + "肠"].strokes,
+      SEVEN.strokes,
+      "cache keeps raw order"
+    );
+  });
+  const changAgain = await strokes.load("肠");
+  check("cached load still applies fix", () => {
+    assert.strictEqual(changAgain.strokes[4], SEVEN.strokes[5]);
+    assert.deepStrictEqual(changAgain.medians[4], SEVEN.medians[5]);
+  });
+  response = FIXTURE;
 
   mode = "404";
   let missing = null;
