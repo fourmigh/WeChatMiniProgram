@@ -8,7 +8,7 @@
   </view>
 
   <view class="detail-hero">
-    <view class="big-char">{{char}}</view>
+    <view class="big-char" bindtap="onBigCharTap">{{char}}</view>
     <view class="hero-meta" wx:if="{{mark}}">
       <text class="lv-mark lv{{level}}">{{mark}}</text>
       <text class="hero-level">{{levelName}}</text>

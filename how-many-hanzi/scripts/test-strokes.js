@@ -523,6 +523,39 @@ async function testDetailPage() {
   check("detail tap outside cells ignored", () => {
     assert.strictEqual(navigated, null);
   });
+
+  // 隐藏字彩蛋入口：点顶部大字进入信纸页
+  navigated = null;
+  page.data.isHidden = true;
+  page.data.char = "写";
+  page.onBigCharTap();
+  check("detail big char opens letter", () => {
+    assert.ok(navigated, "navigated");
+    assert.ok(navigated.indexOf("/pages/letter/letter") > -1, navigated);
+  });
+
+  navigated = null;
+  page.data.char = "信";
+  page.onBigCharTap();
+  check("detail big char opens letter for xin", () => {
+    assert.ok(navigated && navigated.indexOf("/pages/letter/letter") > -1);
+  });
+
+  // 常用字库里打开「写」也要能进入（不依赖隐藏字路径）
+  navigated = null;
+  page.data.isHidden = false;
+  page.data.char = "写";
+  page.onBigCharTap();
+  check("detail big char works outside hidden pool", () => {
+    assert.ok(navigated && navigated.indexOf("/pages/letter/letter") > -1);
+  });
+
+  navigated = null;
+  page.data.char = "好";
+  page.onBigCharTap();
+  check("detail big char ignores unlisted chars", () => {
+    assert.strictEqual(navigated, null);
+  });
 }
 
 // ---------- 写字动画页 ----------

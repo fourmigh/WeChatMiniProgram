@@ -11,6 +11,12 @@ const { definePage } = require("../../lib/page-base");
 const LEVEL_NAMES = levels.LEVEL_NAMES;
 const STROKE_MAX_RETRY = 5;
 
+// 隐藏字彩蛋入口：点详情页顶部大字进入对应页面。
+const HIDDEN_EXTRAS = {
+  写: "/pages/letter/letter",
+  信: "/pages/letter/letter",
+};
+
 function deviceDpr() {
   try {
     if (typeof wx !== "undefined" && wx.getWindowInfo) {
@@ -163,6 +169,12 @@ definePage({
 
   retryStrokes() {
     this.loadStroke(this.data.char);
+  },
+
+  // 隐藏字的彩蛋入口：按字配置，任何路径打开详情页都能进入。
+  onBigCharTap() {
+    const url = HIDDEN_EXTRAS[this.data.char];
+    if (url) nav.go(url);
   },
 
   goStrokePlay(start) {

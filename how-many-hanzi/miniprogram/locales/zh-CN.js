@@ -201,6 +201,26 @@ module.exports = {
       strokePrefix: "第 {n} 笔",
       tapHint: "点击笔画或下方序号，从该笔开始写",
     },
+
+    letter: {
+      title: "写信",
+      inputTitle: "想写点什么",
+      placeholder: "在这里写下想说的话…",
+      sizeLabel: "字号",
+      gapLabel: "字距",
+      colsValue: "每行 {n} 字",
+      sizeLevels: ["小", "中", "大", "特大", "超大"],
+      gapLevels: ["极紧", "紧", "无", "窄", "适中", "宽"],
+      durationLabel: "单笔时长",
+      start: "开始写",
+      rewrite: "重写",
+      controlsBar: "输入与设置",
+      collapse: "收起",
+      writingStatus: "写信中… {n}/{m} 字",
+      doneStatus: "写完了 · 共 {m} 字",
+      emptyTip: "先写点内容吧",
+      paperEmpty: "输入内容后点「开始写」，信纸会一笔一笔写出来",
+    },
   },
 
   levels: {

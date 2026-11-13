@@ -1,0 +1,113 @@
+<view class="page">
+  <view class="body-wrap">
+    <!-- 信纸：常驻的整页大纸，四周留边距 -->
+    <scroll-view
+      scroll-y
+      enhanced="{{true}}"
+      show-scrollbar="{{false}}"
+      class="page-body"
+      scroll-top="{{scrollTop}}"
+    >
+      <view class="paper-stage">
+        <view class="paper-card">
+          <canvas
+            type="2d"
+            id="letterCanvas"
+            class="letter-canvas"
+            style="height: {{paperHeightRpx}}rpx"
+          ></canvas>
+        </view>
+      </view>
+    </scroll-view>
+
+    <!-- 展开的配置面板：浮盖在信纸上 -->
+    <view class="editor-overlay" wx:if="{{expanded}}">
+      <scroll-view
+        scroll-y
+        enhanced="{{true}}"
+        show-scrollbar="{{false}}"
+        class="editor-scroll"
+      >
+        <view class="editor card">
+          <view class="editor-head">
+            <text class="section-title">{{T.inputTitle}}</text>
+            <text class="collapse" wx:if="{{started}}" bindtap="toggleControls">{{T.collapse}} ⌄</text>
+          </view>
+
+          <textarea
+            class="letter-input"
+            value="{{text}}"
+            maxlength="{{maxLen}}"
+            placeholder="{{placeholder}}"
+            placeholder-class="letter-placeholder"
+            bindinput="onInput"
+            disable-default-padding="{{true}}"
+            fixed="{{true}}"
+          ></textarea>
+
+          <view class="setting-row">
+            <text class="setting-label">{{T.sizeLabel}}</text>
+            <slider
+              class="setting-slider"
+              min="45"
+              max="200"
+              step="5"
+              value="{{letterSize}}"
+              activeColor="#c8553d"
+              backgroundColor="#e7dfd1"
+              block-size="20"
+              bindchanging="onSizeChanging"
+              bindchange="onSizeChange"
+            ></slider>
+            <text class="setting-value">{{letterSizeText}}</text>
+          </view>
+
+          <view class="setting-row">
+            <text class="setting-label">{{T.gapLabel}}</text>
+            <slider
+              class="setting-slider"
+              min="-12"
+              max="24"
+              step="2"
+              value="{{letterGap}}"
+              activeColor="#c8553d"
+              backgroundColor="#e7dfd1"
+              block-size="20"
+              bindchanging="onGapChanging"
+              bindchange="onGapChange"
+            ></slider>
+            <text class="setting-value">{{letterGapText}}</text>
+          </view>
+
+          <view class="cols-note">{{colsText}}</view>
+
+          <view class="setting-row">
+            <text class="setting-label">{{T.durationLabel}}</text>
+            <slider
+              class="setting-slider"
+              min="300"
+              max="3000"
+              step="100"
+              value="{{duration}}"
+              activeColor="#c8553d"
+              backgroundColor="#e7dfd1"
+              block-size="20"
+              bindchanging="onDurationChanging"
+              bindchange="onDurationChange"
+            ></slider>
+            <text class="setting-value">{{durationText}}</text>
+          </view>
+
+          <view class="btn letter-btn" bindtap="startWrite">{{started ? T.rewrite : T.start}}</view>
+        </view>
+      </scroll-view>
+    </view>
+
+    <!-- 收起后固定在屏幕底部 -->
+    <view class="bar" wx:if="{{!expanded}}" bindtap="toggleControls">
+      <text class="bar-title">{{T.controlsBar}}</text>
+      <text class="bar-status">{{statusText}}</text>
+      <text class="bar-arrow">⌃</text>
+    </view>
+  </view>
+</view>

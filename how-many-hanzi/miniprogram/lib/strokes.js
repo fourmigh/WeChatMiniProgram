@@ -638,6 +638,7 @@ module.exports = {
   COLORS,
   heightRpx,
   cellLayout,
+  cellMapPoint,
   hitCell,
   parseStrokes,
   drawCell,

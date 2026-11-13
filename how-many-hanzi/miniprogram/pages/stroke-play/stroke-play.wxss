@@ -110,7 +110,7 @@
 
 .duration-slider {
   flex: 1;
-  margin: 0 var(--sp-xs);
+  margin: 0 var(--sp-lg);
 }
 
 .duration-value {

@@ -15,6 +15,9 @@ const DEFAULT_SETTINGS = {
   sampleSize: 20,
   strokeDuration: 2000,
   strokePause: true,
+  letterSize: 95,
+  letterGap: 8,
+  letterDuration: 800,
 };
 
 function hasWx() {

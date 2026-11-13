@@ -15,6 +15,7 @@ const PAGE_BY_DIR = {
   "chars-list": "charsList",
   "char-detail": "charDetail",
   "stroke-play": "strokePlay",
+  letter: "letter",
 };
 
 function resolveKey(key) {
