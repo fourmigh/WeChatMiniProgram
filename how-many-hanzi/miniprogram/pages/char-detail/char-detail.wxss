@@ -177,6 +177,23 @@
   margin-top: var(--sp-2xs);
 }
 
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--sp-sm);
+}
+
+.section-head .section-title {
+  margin-bottom: 0;
+}
+
+.section-hint {
+  padding: 4rpx 0 4rpx var(--sp-sm);
+  font-size: 22rpx;
+  color: #a29a8e;
+}
+
 .stroke-canvas {
   display: block;
   width: 100%;

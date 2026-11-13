@@ -1,0 +1,155 @@
+.play-stage {
+  background: #ffffff;
+  border-radius: 24rpx;
+  padding: 24rpx;
+  box-shadow: 0 4rpx 24rpx rgba(34, 51, 59, 0.06);
+  margin-bottom: var(--sp-md);
+}
+
+.play-canvas {
+  display: block;
+  width: 100%;
+}
+
+.caption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: var(--sp-xs);
+}
+
+.caption-main {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #22333b;
+}
+
+.caption-sub {
+  margin-top: 4rpx;
+  font-size: 22rpx;
+  color: #a29a8e;
+}
+
+.stage-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: 160rpx 0;
+  font-size: 26rpx;
+  color: #7a858c;
+}
+
+.stage-retry {
+  margin-left: var(--sp-sm);
+  color: #c8553d;
+  font-weight: 600;
+}
+
+.controls {
+  background: #ffffff;
+  border-radius: 24rpx;
+  padding: var(--sp-md);
+  box-shadow: 0 4rpx 24rpx rgba(34, 51, 59, 0.06);
+  margin-bottom: var(--sp-md);
+}
+
+.nav-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ctrl-btn {
+  min-width: 180rpx;
+  text-align: center;
+  padding: 18rpx 0;
+  border-radius: 40rpx;
+  background: #f0ebe2;
+  color: #22333b;
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.ctrl-btn.primary {
+  background: #c8553d;
+  color: #ffffff;
+}
+
+.progress {
+  font-size: 26rpx;
+  color: #7a858c;
+}
+
+.replay-row {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--sp-sm);
+}
+
+.replay-row .ctrl-btn {
+  flex: 1;
+  min-width: 0;
+}
+
+.replay-row .ctrl-btn + .ctrl-btn {
+  margin-left: var(--sp-sm);
+}
+
+.duration-row {
+  display: flex;
+  align-items: center;
+  margin-top: var(--sp-sm);
+}
+
+.duration-label {
+  flex-shrink: 0;
+  font-size: 24rpx;
+  color: #7a858c;
+}
+
+.duration-slider {
+  flex: 1;
+  margin: 0 var(--sp-xs);
+}
+
+.duration-value {
+  width: 80rpx;
+  text-align: right;
+  font-size: 24rpx;
+  color: #22333b;
+  font-weight: 600;
+}
+
+.pause-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--sp-sm);
+  padding-top: var(--sp-sm);
+  border-top: 1px solid #f0ebe2;
+}
+
+.pause-label {
+  font-size: 24rpx;
+  color: #55636b;
+}
+
+.chips-scroll {
+  margin-top: var(--sp-sm);
+  white-space: nowrap;
+}
+
+.stroke-chips {
+  display: inline-flex;
+  flex-wrap: nowrap;
+}
+
+.stroke-chip {
+  white-space: nowrap;
+}
+
+.stroke-chip.active {
+  background: #c8553d;
+  color: #ffffff;
+}

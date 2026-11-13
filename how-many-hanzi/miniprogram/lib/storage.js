@@ -13,6 +13,8 @@ const MAX_RECENT_CHARS = 300;
 const DEFAULT_SETTINGS = {
   scope: 4,
   sampleSize: 20,
+  strokeDuration: 2000,
+  strokePause: true,
 };
 
 function hasWx() {

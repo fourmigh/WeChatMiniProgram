@@ -4,6 +4,7 @@ const pinyin = require("../../lib/pinyin");
 const storage = require("../../lib/storage");
 const levels = require("../../lib/levels");
 const i18n = require("../../lib/i18n");
+const nav = require("../../lib/nav");
 const strokes = require("../../lib/strokes");
 const { definePage } = require("../../lib/page-base");
 
@@ -164,6 +165,29 @@ definePage({
     this.loadStroke(this.data.char);
   },
 
+  goStrokePlay(start) {
+    nav.go(
+      "/pages/stroke-play/stroke-play?char=" +
+        encodeURIComponent(this.data.char) +
+        "&start=" +
+        (Number(start) || 0)
+    );
+  },
+
+  // 点任意字格 → 从该格笔画开始播放书写动画。
+  onStrokeCellTap(e) {
+    if (this.data.strokeStatus !== "ready" || !this.strokeLayout) return;
+    const touch = e.changedTouches && e.changedTouches[0];
+    if (!touch || touch.x == null || touch.y == null) return;
+    const index = strokes.hitCell(
+      this.strokeLayout,
+      touch.x,
+      touch.y,
+      this.strokeData ? this.strokeData.strokes.length : 0
+    );
+    if (index >= 0) this.goStrokePlay(index);
+  },
+
   drawStrokeCanvas(retry) {
     const self = this;
     const attempt = retry || 0;
@@ -196,6 +220,7 @@ definePage({
         canvas.width = Math.round(info.width * dpr);
         canvas.height = Math.round(info.height * dpr);
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        self.strokeLayout = strokes.cellLayout(info.width);
         strokes.draw({
           ctx: ctx,
           width: info.width,

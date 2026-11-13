@@ -44,7 +44,10 @@
       </view>
 
       <view class="card">
-        <view class="section-title">{{T.strokeOrderTitle}}</view>
+        <view class="section-head">
+          <view class="section-title">{{T.strokeOrderTitle}}</view>
+          <view class="section-hint" wx:if="{{strokeStatus === 'ready'}}">{{T.strokePlayHint}}</view>
+        </view>
 
         <view class="stroke-stage" wx:if="{{strokeStatus === 'ready'}}">
           <canvas
@@ -52,6 +55,7 @@
             id="strokeCanvas"
             class="stroke-canvas"
             style="height: {{canvasHeightRpx}}rpx"
+            bindtouchend="onStrokeCellTap"
           ></canvas>
           <view class="stroke-legend">
             <view class="legend-item">
