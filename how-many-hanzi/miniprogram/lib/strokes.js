@@ -227,14 +227,27 @@ function draw(opts) {
       by - boxOffset + (900 - py) * glyphScale,
     ];
 
+    // 第一遍：整字浅灰打底，避免灰色在交叉处盖住墨迹
     for (let j = 0; j < parsed.length; j++) {
       ctx.beginPath();
       svgpath.tracePath(ctx, parsed[j], mapPoint);
-      if (j < i) ctx.fillStyle = COLORS.done;
-      else if (j === i) ctx.fillStyle = COLORS.current;
-      else ctx.fillStyle = COLORS.pending;
+      ctx.fillStyle = COLORS.pending;
       ctx.fill();
     }
+
+    // 第二遍：已完成笔画用墨色
+    for (let j = 0; j < i; j++) {
+      ctx.beginPath();
+      svgpath.tracePath(ctx, parsed[j], mapPoint);
+      ctx.fillStyle = COLORS.done;
+      ctx.fill();
+    }
+
+    // 当前笔最后绘制，保证处在最上层
+    ctx.beginPath();
+    svgpath.tracePath(ctx, parsed[i], mapPoint);
+    ctx.fillStyle = COLORS.current;
+    ctx.fill();
 
     // 序号
     ctx.fillStyle = COLORS.number;
@@ -283,6 +296,7 @@ module.exports = {
   MAX_CACHE,
   DESIGN_W,
   COLS,
+  COLORS,
   heightRpx,
   load,
   draw,

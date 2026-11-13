@@ -53,7 +53,7 @@ check("parse cubic and smooth cubic", () => {
 
 // ---------- 绘制 ----------
 function fakeCtx() {
-  const calls = { fill: 0, stroke: 0, text: [], moveTo: 0 };
+  const calls = { fill: 0, stroke: 0, text: [], moveTo: 0, styles: [] };
   return {
     calls,
     clearRect() {},
@@ -67,6 +67,7 @@ function fakeCtx() {
     closePath() {},
     fill() {
       calls.fill++;
+      calls.styles.push(this.fillStyle);
     },
     stroke() {
       calls.stroke++;
@@ -113,10 +114,63 @@ check("draw grid", () => {
     data: FIXTURE,
     names: ["横", "竖"],
   });
-  // 每格 1 次背景 + 2 笔墨迹，共 2 格
-  assert.strictEqual(ctx.calls.fill, 6, "fill calls");
+  const C = strokes.COLORS;
+  // 每格：背景 1 次 + 灰色打底 2 次 + 已完成 + 当前笔
+  assert.strictEqual(ctx.calls.fill, 9, "fill calls");
   assert.strictEqual(ctx.calls.stroke, 2, "cell borders");
   assert.deepStrictEqual(ctx.calls.text, ["1", "横", "2", "竖"]);
+  // 顺序必须是：灰底 → 墨迹 → 当前笔，当前笔永远最后
+  assert.deepStrictEqual(ctx.calls.styles, [
+    C.cellBg,
+    C.pending,
+    C.pending,
+    C.current,
+    C.cellBg,
+    C.pending,
+    C.pending,
+    C.done,
+    C.current,
+  ]);
+});
+
+check("current stroke on top in every cell", () => {
+  const C = strokes.COLORS;
+  const ctx = fakeCtx();
+  const three = {
+    strokes: FIXTURE.strokes.concat([
+      "M 200 200 L 800 200 L 800 260 L 200 260 Z",
+    ]),
+    medians: FIXTURE.medians.concat([[[200, 230], [800, 230]]]),
+  };
+  strokes.draw({
+    ctx,
+    width: 311,
+    height: strokes.heightRpx(3) / 2,
+    data: three,
+    names: [],
+  });
+  let pos = 0;
+  for (let i = 0; i < 3; i++) {
+    const count = 1 + 3 + i + 1; // 背景 + 灰底 + 已完成 + 当前笔
+    const seg = ctx.calls.styles.slice(pos, pos + count);
+    pos += count;
+    assert.strictEqual(seg[0], C.cellBg, "cell " + i + " bg");
+    assert.strictEqual(
+      seg[seg.length - 1],
+      C.current,
+      "cell " + i + " current on top"
+    );
+    const gray = seg.slice(1, 4);
+    const ink = seg.slice(4, -1);
+    assert.ok(
+      gray.every((s) => s === C.pending),
+      "cell " + i + " gray first"
+    );
+    assert.ok(
+      ink.every((s) => s === C.done),
+      "cell " + i + " ink after gray"
+    );
+  }
 });
 
 // ---------- 缓存与网络 ----------
